@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Session - BrainKit</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* === DESIGN SYSTEM: VARIABLES === */
+        :root {
+            /* Colors - Primary */
+            --color-primary-500: #3B82F6;
+            --color-primary-600: #2563EB;
+
+            /* Colors - Semantic */
+            --color-success-500: #10B981;
+            --color-success-600: #059669;
+            --color-warning-500: #F59E0B;
+            --color-warning-600: #D97706;
+            --color-error-500: #EF4444;
+            --color-error-600: #DC2626;
+
+            /* Colors - Neutrals */
+            --color-gray-50: #F8FAFC;
+            --color-gray-100: #F1F5F9;
+            --color-gray-200: #E2E8F0;
+            --color-gray-400: #94A3B8;
+            --color-gray-500: #64748B;
+            --color-gray-600: #475569;
+            --color-gray-700: #334155;
+            --color-gray-800: #1E293B;
+            --color-gray-900: #0F172A;
+
+            /* Typography */
+            --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+            /* Spacing */
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-5: 1.25rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --space-12: 3rem;
+
+            /* Shadows */
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+            /* Border Radius */
+            --radius-lg: 0.5rem;
+            --radius-xl: 0.75rem;
+            --radius-flashcard: 1rem;
+        }
+
+        /* === RESET & BASE === */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family-sans);
+            font-size: 1rem;
+            color: var(--color-gray-800);
+            line-height: 1.5;
+            background: var(--color-gray-50);
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* === HEADER === */
+        .header {
+            background: white;
+            border-bottom: 1px solid var(--color-gray-200);
+            padding: var(--space-4) var(--space-6);
+        }
+
+        .header-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .close-button {
+            color: var(--color-gray-600);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1.125rem;
+        }
+
+        .deck-info {
+            text-align: center;
+            flex: 1;
+        }
+
+        .card-counter {
+            font-size: 0.875rem;
+            color: var(--color-gray-500);
+            margin-bottom: var(--space-2);
+        }
+
+        .deck-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--color-gray-800);
+        }
+
+        /* === PROGRESS BAR === */
+        .progress-container {
+            padding: 0 var(--space-6);
+            background: white;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: var(--color-gray-200);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--color-primary-500);
+            transition: width 300ms ease-out;
+            border-radius: 2px;
+        }
+
+        /* === MAIN CONTENT === */
+        .study-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-8) var(--space-6);
+        }
+
+        /* === FLASHCARD === */
+        .flashcard-wrapper {
+            perspective: 1000px;
+            margin-bottom: var(--space-8);
+        }
+
+        .flashcard {
+            width: 100%;
+            max-width: 600px;
+            min-height: 300px;
+            background: white;
+            border-radius: var(--radius-flashcard);
+            box-shadow: var(--shadow-xl);
+            padding: var(--space-12);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s ease-out;
+            transform-style: preserve-3d;
+        }
+
+        .flashcard:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .flashcard-content {
+            font-size: 1.5rem;
+            line-height: 1.4;
+            color: var(--color-gray-900);
+            margin-bottom: var(--space-6);
+        }
+
+        .flashcard-label {
+            font-size: 0.75rem;
+            color: var(--color-gray-400);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: var(--space-4);
+        }
+
+        .flashcard-hint {
+            font-size: 0.875rem;
+            color: var(--color-gray-500);
+            margin-top: var(--space-6);
+        }
+
+        /* === RATING BUTTONS === */
+        .rating-section {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .show-answer-button {
+            width: 100%;
+            height: 56px;
+            background: var(--color-primary-600);
+            color: white;
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 150ms ease;
+        }
+
+        .show-answer-button:hover {
+            background: var(--color-primary-700);
+        }
+
+        .rating-buttons {
+            display: none;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-4);
+        }
+
+        .rating-buttons.visible {
+            display: grid;
+        }
+
+        .rating-button {
+            height: 80px;
+            border-radius: var(--radius-lg);
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 150ms ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-2);
+        }
+
+        .rating-button:hover {
+            transform: scale(1.02);
+        }
+
+        .rating-button:active {
+            transform: scale(0.98);
+        }
+
+        .rating-hard {
+            background: var(--color-error-500);
+            color: white;
+        }
+
+        .rating-hard:hover {
+            background: var(--color-error-600);
+        }
+
+        .rating-good {
+            background: var(--color-warning-500);
+            color: var(--color-gray-900);
+        }
+
+        .rating-good:hover {
+            background: var(--color-warning-600);
+        }
+
+        .rating-easy {
+            background: var(--color-success-500);
+            color: white;
+        }
+
+        .rating-easy:hover {
+            background: var(--color-success-600);
+        }
+
+        .rating-label {
+            font-size: 1.125rem;
+        }
+
+        .rating-hint {
+            font-size: 0.75rem;
+            opacity: 0.9;
+        }
+
+        .keyboard-hint {
+            text-align: center;
+            margin-top: var(--space-4);
+            font-size: 0.875rem;
+            color: var(--color-gray-500);
+        }
+
+        /* === COMPLETION SCREEN === */
+        .completion-screen {
+            display: none;
+            text-align: center;
+            max-width: 600px;
+        }
+
+        .completion-screen.visible {
+            display: block;
+        }
+
+        .celebration-icon {
+            font-size: 4rem;
+            margin-bottom: var(--space-6);
+        }
+
+        .completion-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: var(--space-8);
+            color: var(--color-gray-900);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-6);
+            background: white;
+            padding: var(--space-8);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            margin-bottom: var(--space-8);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--color-primary-600);
+            margin-bottom: var(--space-2);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--color-gray-500);
+        }
+
+        .next-reviews {
+            background: white;
+            padding: var(--space-6);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            margin-bottom: var(--space-8);
+        }
+
+        .next-reviews h3 {
+            font-size: 1.125rem;
+            margin-bottom: var(--space-4);
+            color: var(--color-gray-800);
+        }
+
+        .next-reviews ul {
+            list-style: none;
+        }
+
+        .next-reviews li {
+            padding: var(--space-3) 0;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--color-gray-100);
+        }
+
+        .next-reviews li:last-child {
+            border-bottom: none;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-4);
+        }
+
+        .button {
+            width: 100%;
+            height: 48px;
+            border-radius: var(--radius-lg);
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 150ms ease;
+        }
+
+        .button-primary {
+            background: var(--color-primary-600);
+            color: white;
+        }
+
+        .button-primary:hover {
+            background: var(--color-primary-700);
+        }
+
+        .button-secondary {
+            background: white;
+            border: 1px solid var(--color-gray-300);
+            color: var(--color-gray-700);
+        }
+
+        .button-secondary:hover {
+            background: var(--color-gray-50);
+        }
+
+        .streak-badge {
+            margin-top: var(--space-6);
+            font-size: 1.125rem;
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 639px) {
+            .rating-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .rating-button {
+                height: 64px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-container">
+            <a href="#" class="close-button">✕ Close</a>
+            <div class="deck-info">
+                <div class="card-counter" id="cardCounter">Card 3 of 8</div>
+                <div class="deck-name">ACLS Medications</div>
+            </div>
+            <div style="width: 80px;"></div>
+        </div>
+    </header>
+
+    <!-- PROGRESS BAR -->
+    <div class="progress-container">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 37%;"></div>
+        </div>
+    </div>
+
+    <!-- STUDY CONTAINER -->
+    <div class="study-container" id="studyContainer">
+        <!-- FLASHCARD -->
+        <div class="flashcard-wrapper">
+            <div class="flashcard" id="flashcard" onclick="flipCard()">
+                <div class="flashcard-label" id="flashcardLabel">FRONT</div>
+                <div class="flashcard-content" id="flashcardContent">
+                    What is the first medication administered in ACLS protocols?
+                </div>
+                <div class="flashcard-hint">Press SPACE or click to reveal</div>
+            </div>
+        </div>
+
+        <!-- RATING SECTION -->
+        <div class="rating-section">
+            <button class="show-answer-button" id="showAnswerBtn" onclick="showAnswer()">
+                Show Answer
+            </button>
+
+            <div class="rating-buttons" id="ratingButtons">
+                <button class="rating-button rating-hard" onclick="rateCard('hard')">
+                    <span class="rating-label">HARD</span>
+                    <span class="rating-hint">1 | Again tomorrow</span>
+                </button>
+                <button class="rating-button rating-good" onclick="rateCard('good')">
+                    <span class="rating-label">GOOD</span>
+                    <span class="rating-hint">3 | ~1 day</span>
+                </button>
+                <button class="rating-button rating-easy" onclick="rateCard('easy')">
+                    <span class="rating-label">EASY</span>
+                    <span class="rating-hint">5 | ~4 days</span>
+                </button>
+            </div>
+
+            <div class="keyboard-hint" id="keyboardHint" style="display: none;">
+                Press 1, 3, or 5 to rate and continue
+            </div>
+        </div>
+
+        <!-- COMPLETION SCREEN -->
+        <div class="completion-screen" id="completionScreen">
+            <div class="celebration-icon">🎉</div>
+            <h2 class="completion-title">Session Complete!</h2>
+
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value">8</div>
+                    <div class="stat-label">Cards Reviewed</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">4:32</div>
+                    <div class="stat-label">Minutes Studied</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">92%</div>
+                    <div class="stat-label">Correct Rate</div>
+                </div>
+            </div>
+
+            <div class="next-reviews">
+                <h3>Next Reviews</h3>
+                <ul>
+                    <li>
+                        <span>Tomorrow:</span>
+                        <strong>3 cards</strong>
+                    </li>
+                    <li>
+                        <span>In 3 days:</span>
+                        <strong>4 cards</strong>
+                    </li>
+                    <li>
+                        <span>In 1 week:</span>
+                        <strong>1 card</strong>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="action-buttons">
+                <button class="button button-primary">Study More Cards</button>
+                <button class="button button-secondary">Return to Dashboard</button>
+            </div>
+
+            <div class="streak-badge">
+                🔥 12 day streak!
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isFlipped = false;
+        let currentCard = 3;
+        let totalCards = 8;
+
+        // Flip card animation
+        function flipCard() {
+            if (!isFlipped) {
+                showAnswer();
+            }
+        }
+
+        // Show answer
+        function showAnswer() {
+            const flashcard = document.getElementById('flashcard');
+            const flashcardLabel = document.getElementById('flashcardLabel');
+            const flashcardContent = document.getElementById('flashcardContent');
+            const showAnswerBtn = document.getElementById('showAnswerBtn');
+            const ratingButtons = document.getElementById('ratingButtons');
+            const keyboardHint = document.getElementById('keyboardHint');
+
+            // Update card content
+            flashcardLabel.textContent = 'BACK';
+            flashcardContent.innerHTML = `
+                <strong style="font-size: 1.875rem; color: var(--color-primary-600);">EPINEPHRINE</strong>
+                <br><br>
+                In the EALA mnemonic, E stands for Epinephrine - the first medication given in cardiac arrest.
+            `;
+
+            // Hide show answer button, show rating buttons
+            showAnswerBtn.style.display = 'none';
+            ratingButtons.classList.add('visible');
+            keyboardHint.style.display = 'block';
+
+            isFlipped = true;
+        }
+
+        // Rate card
+        function rateCard(rating) {
+            console.log(`Card rated: ${rating}`);
+
+            // Simulate moving to next card
+            currentCard++;
+
+            if (currentCard > totalCards) {
+                // Show completion screen
+                document.getElementById('studyContainer').style.display = 'none';
+                document.getElementById('completionScreen').classList.add('visible');
+                document.querySelector('.progress-container').style.display = 'none';
+            } else {
+                // Reset for next card
+                resetCard();
+                updateProgress();
+            }
+        }
+
+        // Reset card
+        function resetCard() {
+            const flashcardLabel = document.getElementById('flashcardLabel');
+            const flashcardContent = document.getElementById('flashcardContent');
+            const showAnswerBtn = document.getElementById('showAnswerBtn');
+            const ratingButtons = document.getElementById('ratingButtons');
+            const keyboardHint = document.getElementById('keyboardHint');
+
+            flashcardLabel.textContent = 'FRONT';
+            flashcardContent.textContent = 'What comes after Amiodarone in the ACLS protocol?';
+
+            showAnswerBtn.style.display = 'block';
+            ratingButtons.classList.remove('visible');
+            keyboardHint.style.display = 'none';
+
+            isFlipped = false;
+        }
+
+        // Update progress
+        function updateProgress() {
+            const progress = (currentCard / totalCards) * 100;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+            document.getElementById('cardCounter').textContent = `Card ${currentCard} of ${totalCards}`;
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !isFlipped) {
+                e.preventDefault();
+                showAnswer();
+            } else if (e.key === '1' && isFlipped) {
+                rateCard('hard');
+            } else if (e.key === '3' && isFlipped) {
+                rateCard('good');
+            } else if (e.key === '5' && isFlipped) {
+                rateCard('easy');
+            }
+        });
+    </script>
+</body>
+</html>

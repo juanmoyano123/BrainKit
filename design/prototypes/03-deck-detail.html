@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACLS Medications - BrainKit</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* === DESIGN SYSTEM: VARIABLES === */
+        :root {
+            /* Colors - Primary */
+            --color-primary-50: #EFF6FF;
+            --color-primary-100: #DBEAFE;
+            --color-primary-200: #BFDBFE;
+            --color-primary-300: #93C5FD;
+            --color-primary-500: #3B82F6;
+            --color-primary-600: #2563EB;
+            --color-primary-700: #1D4ED8;
+
+            /* Colors - Neutrals */
+            --color-gray-50: #F8FAFC;
+            --color-gray-100: #F1F5F9;
+            --color-gray-200: #E2E8F0;
+            --color-gray-300: #CBD5E1;
+            --color-gray-400: #94A3B8;
+            --color-gray-500: #64748B;
+            --color-gray-600: #475569;
+            --color-gray-700: #334155;
+            --color-gray-800: #1E293B;
+            --color-gray-900: #0F172A;
+
+            /* Typography */
+            --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+            /* Spacing */
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-5: 1.25rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+
+            /* Shadows */
+            --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+
+            /* Border Radius */
+            --radius-lg: 0.5rem;
+            --radius-xl: 0.75rem;
+        }
+
+        /* === RESET & BASE === */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family-sans);
+            font-size: 1rem;
+            color: var(--color-gray-600);
+            line-height: 1.5;
+            background: var(--color-gray-50);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3, h4 {
+            color: var(--color-gray-900);
+        }
+
+        /* === HEADER === */
+        .header {
+            background: white;
+            border-bottom: 1px solid var(--color-gray-200);
+            padding: var(--space-4) var(--space-6);
+        }
+
+        .header-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+        }
+
+        .back-button {
+            color: var(--color-gray-600);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .header-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: var(--space-3);
+        }
+
+        /* === BUTTONS === */
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 44px;
+            padding: 12px 20px;
+            border-radius: var(--radius-lg);
+            font-size: 0.9375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 150ms ease;
+            text-decoration: none;
+            border: none;
+        }
+
+        .button-primary {
+            background: var(--color-primary-600);
+            color: white;
+        }
+
+        .button-primary:hover {
+            background: var(--color-primary-700);
+        }
+
+        .button-secondary {
+            background: white;
+            border: 1px solid var(--color-gray-300);
+            color: var(--color-gray-700);
+        }
+
+        .button-secondary:hover {
+            background: var(--color-gray-50);
+        }
+
+        /* === MAIN CONTENT === */
+        .main-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: var(--space-8) var(--space-6);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: var(--space-6);
+        }
+
+        .section-title {
+            font-size: 1.875rem;
+            font-weight: 600;
+            margin-bottom: var(--space-2);
+        }
+
+        .section-subtitle {
+            font-size: 1.125rem;
+            color: var(--color-gray-500);
+        }
+
+        /* === MNEMONIC CARDS === */
+        .mnemonic-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-6);
+            margin-bottom: var(--space-8);
+        }
+
+        .mnemonic-card {
+            background: white;
+            border: 2px solid var(--color-gray-200);
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+            cursor: pointer;
+            transition: all 200ms ease;
+        }
+
+        .mnemonic-card:hover {
+            border-color: var(--color-primary-300);
+            box-shadow: var(--shadow-md);
+        }
+
+        .mnemonic-card.selected {
+            border-color: var(--color-primary-500);
+            background: var(--color-primary-50);
+        }
+
+        .mnemonic-card.dimmed {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .mnemonic-badge {
+            display: inline-flex;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-4);
+        }
+
+        .badge-acrostic {
+            background: #E0E7FF;
+            color: #3730A3;
+        }
+
+        .badge-story {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+
+        .badge-visual {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        .mnemonic-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: var(--space-4);
+        }
+
+        .mnemonic-content {
+            font-size: 0.9375rem;
+            line-height: 1.6;
+            margin-bottom: var(--space-4);
+            color: var(--color-gray-600);
+        }
+
+        .mnemonic-instructions {
+            font-size: 0.875rem;
+            color: var(--color-gray-500);
+            padding-top: var(--space-4);
+            border-top: 1px solid var(--color-gray-200);
+            margin-bottom: var(--space-5);
+        }
+
+        .mnemonic-instructions strong {
+            color: var(--color-gray-700);
+            display: block;
+            margin-bottom: var(--space-2);
+        }
+
+        .mnemonic-card .button {
+            width: 100%;
+        }
+
+        /* === CONTINUE BUTTON === */
+        .continue-section {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .continue-section .button {
+            width: 100%;
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 1023px) {
+            .mnemonic-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-container">
+            <div class="header-left">
+                <a href="#" class="back-button">← Back</a>
+                <h1 class="header-title">ACLS Medications</h1>
+            </div>
+            <div class="header-actions">
+                <button class="button button-secondary">Regenerate All</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <div class="section-header">
+            <h2 class="section-title">Choose your mnemonic technique</h2>
+            <p class="section-subtitle">Select the one that resonates best with your learning style</p>
+        </div>
+
+        <!-- MNEMONIC GRID -->
+        <div class="mnemonic-grid">
+            <!-- Acrostic Card -->
+            <div class="mnemonic-card" onclick="selectMnemonic(0)">
+                <div class="mnemonic-badge badge-acrostic">Acrostic</div>
+                <h3 class="mnemonic-title">"EALA Memory"</h3>
+                <div class="mnemonic-content">
+                    <p><strong>E</strong> - Epinephrine</p>
+                    <p><strong>A</strong> - Amiodarone</p>
+                    <p><strong>L</strong> - Lidocaine</p>
+                    <p><strong>A</strong> - Atropine</p>
+                </div>
+                <div class="mnemonic-instructions">
+                    <strong>How to use:</strong>
+                    Repeat "EALA" before each shift. Each letter represents the first medication in the ACLS protocol sequence.
+                </div>
+                <button class="button button-primary">Use This Mnemonic</button>
+            </div>
+
+            <!-- Story Card -->
+            <div class="mnemonic-card" onclick="selectMnemonic(1)">
+                <div class="mnemonic-badge badge-story">Story</div>
+                <h3 class="mnemonic-title">"The ER Journey"</h3>
+                <div class="mnemonic-content">
+                    <p>Picture yourself in a busy ER. The alarms sound as a code blue is called. You rush to the crash cart and grab <strong>Epinephrine</strong> first, then reach for <strong>Amiodarone</strong> as you prepare to stabilize the rhythm...</p>
+                </div>
+                <div class="mnemonic-instructions">
+                    <strong>How to use:</strong>
+                    Walk through this story visualization before studying. The narrative helps anchor each medication in sequence.
+                </div>
+                <button class="button button-primary">Use This Mnemonic</button>
+            </div>
+
+            <!-- Visual Pattern Card -->
+            <div class="mnemonic-card" onclick="selectMnemonic(2)">
+                <div class="mnemonic-badge badge-visual">Visual</div>
+                <h3 class="mnemonic-title">"Medicine Cabinet Method"</h3>
+                <div class="mnemonic-content">
+                    <p>Imagine a medicine cabinet with 4 shelves. Top shelf: Epinephrine (adrenaline rush). Second shelf: Amiodarone (heart rhythm). Third shelf: Lidocaine (local anesthetic). Bottom shelf: Atropine (parasympathetic blocker).</p>
+                </div>
+                <div class="mnemonic-instructions">
+                    <strong>How to use:</strong>
+                    Visualize opening the cabinet from top to bottom. Each shelf represents one medication in order.
+                </div>
+                <button class="button button-primary">Use This Mnemonic</button>
+            </div>
+        </div>
+
+        <!-- CONTINUE BUTTON (Hidden by default, shown when selected) -->
+        <div class="continue-section" id="continueSection" style="display: none;">
+            <button class="button button-primary">Continue to Flashcards →</button>
+        </div>
+    </main>
+
+    <script>
+        let selectedCard = null;
+
+        function selectMnemonic(index) {
+            const cards = document.querySelectorAll('.mnemonic-card');
+            const continueSection = document.getElementById('continueSection');
+
+            // Reset all cards
+            cards.forEach((card, i) => {
+                if (i === index) {
+                    card.classList.add('selected');
+                    card.classList.remove('dimmed');
+                    selectedCard = i;
+                } else {
+                    card.classList.remove('selected');
+                    card.classList.add('dimmed');
+                }
+            });
+
+            // Show continue button
+            continueSection.style.display = 'block';
+            continueSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    </script>
+</body>
+</html>
