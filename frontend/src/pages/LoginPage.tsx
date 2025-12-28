@@ -33,7 +33,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { initialize } = useAuthStore();
+  const { setSession, setUser } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -79,10 +79,12 @@ export const LoginPage: React.FC = () => {
         throw new Error('Login failed. Please try again.');
       }
 
-      // Initialize auth store
-      await initialize();
+      // Store session in auth store
+      setSession(authData.session);
+      setUser(authData.user);
 
       // Redirect to dashboard (Scenario 5)
+      // Auth will be initialized automatically by App.tsx useEffect
       navigate('/dashboard');
     } catch (err: unknown) {
       if (err instanceof Error) {
