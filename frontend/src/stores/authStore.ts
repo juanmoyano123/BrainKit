@@ -93,20 +93,44 @@ export const useAuthStore = create<AuthState>()(
             } = await supabase.auth.getUser();
 
             if (user) {
-              // Fetch profile from database
-              const { data: profile } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', user.id)
-                .single();
+              // Fetch profile from backend (profiles table is in PostgreSQL, not Supabase)
+              try {
+                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/auth/me`, {
+                  headers: {
+                    Authorization: `Bearer ${session.access_token}`,
+                  },
+                });
 
-              set({
-                user,
-                profile: profile as UserProfile,
-                session,
-                loading: false,
-                initialized: true,
-              });
+                if (response.ok) {
+                  const data = await response.json();
+                  set({
+                    user,
+                    profile: data.profile as UserProfile,
+                    session,
+                    loading: false,
+                    initialized: true,
+                  });
+                } else {
+                  // Profile doesn't exist yet, continue without it
+                  set({
+                    user,
+                    profile: null,
+                    session,
+                    loading: false,
+                    initialized: true,
+                  });
+                }
+              } catch (profileError) {
+                console.error('Error fetching profile:', profileError);
+                // Continue without profile
+                set({
+                  user,
+                  profile: null,
+                  session,
+                  loading: false,
+                  initialized: true,
+                });
+              }
             } else {
               set({
                 user: null,
