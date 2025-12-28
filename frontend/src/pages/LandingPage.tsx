@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui';
 import {
   Brain,
@@ -11,6 +12,8 @@ import {
 } from 'lucide-react';
 
 export function LandingPage() {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen">
       {/* Header */}
@@ -20,8 +23,12 @@ export function LandingPage() {
             BrainKit
           </a>
           <nav className="flex items-center gap-4">
-            <Button variant="secondary">Sign In</Button>
-            <Button variant="primary">Start Free →</Button>
+            <Button variant="secondary" onClick={() => navigate('/login')}>
+              Sign In
+            </Button>
+            <Button variant="primary" onClick={() => navigate('/register')}>
+              Start Free →
+            </Button>
           </nav>
         </div>
       </header>
@@ -37,7 +44,7 @@ export function LandingPage() {
               AI generates mnemonic techniques and flashcards from any list. Spaced repetition
               handles the rest.
             </p>
-            <Button variant="primary" size="lg">
+            <Button variant="primary" size="lg" onClick={() => navigate('/register')}>
               Create Your First Deck - Free →
             </Button>
           </div>
@@ -135,7 +142,11 @@ export function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <Button variant="secondary" className="w-full">
+              <Button
+                variant="secondary"
+                className="w-full"
+                onClick={() => navigate('/register')}
+              >
                 Start Free →
               </Button>
             </div>
@@ -162,7 +173,11 @@ export function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <Button variant="primary" className="w-full">
+              <Button
+                variant="primary"
+                className="w-full"
+                onClick={() => navigate('/register')}
+              >
                 Start Free, Upgrade Later
               </Button>
             </div>
