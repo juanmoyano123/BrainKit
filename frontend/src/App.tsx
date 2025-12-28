@@ -7,6 +7,7 @@ import { RegisterPage } from '@/pages/RegisterPage';
 import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage';
 import { ResetPasswordPage } from '@/pages/ResetPasswordPage';
 import { DashboardPage } from '@/pages/DashboardPage';
+import { DeckDetailPage } from '@/pages/DeckDetailPage';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { useAuthStore, setupAuthListener } from '@/stores/authStore';
 
@@ -48,6 +49,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/decks/:deckId"
+            element={
+              <ProtectedRoute>
+                <DeckDetailPage />
               </ProtectedRoute>
             }
           />
