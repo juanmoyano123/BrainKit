@@ -2,25 +2,37 @@
  * Deck Detail Page
  *
  * Shows a single deck with its flashcards and study options.
- * Implements F-006: AI Flashcard Generation.
+ * Implements F-003 (List Input), F-004 (AI Mnemonics), F-005 (Mnemonic Selection), F-006 (Flashcard Generation).
  */
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Pencil, Trash2, Plus } from 'lucide-react';
-import { useDeckStore, type Deck } from '@/stores/deckStore';
+import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
+import { useDeckStore } from '@/stores/deckStore';
+import { useMnemonicStore } from '@/stores/mnemonicStore';
 import { useFlashcardStore } from '@/stores/flashcardStore';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EditDeckModal } from '@/components/deck/EditDeckModal';
 import { DeleteDeckModal } from '@/components/deck/DeleteDeckModal';
+import { ListInputInterface } from '@/components/deck/ListInputInterface';
+import { MnemonicSelectionView } from '@/components/deck/MnemonicSelectionView';
 import { FlashcardList } from '@/components/flashcard/FlashcardList';
 import { Toast } from '@/components/ui/Toast';
 
 export const DeckDetailPage: React.FC = () => {
   const { deckId } = useParams<{ deckId: string }>();
   const navigate = useNavigate();
-  const { currentDeck, loading, error, fetchDeck, updateDeck, deleteDeck, clearError } = useDeckStore();
+  const { currentDeck, loading, error, fetchDeck, updateDeck, deleteDeck } = useDeckStore();
+  const {
+    currentGeneration,
+    loading: mnemonicLoading,
+    error: mnemonicError,
+    generateMnemonics,
+    selectMnemonic,
+    clearCurrentGeneration,
+    clearError: clearMnemonicError,
+  } = useMnemonicStore();
   const {
     flashcards,
     loading: flashcardsLoading,
@@ -53,6 +65,90 @@ export const DeckDetailPage: React.FC = () => {
     navigate('/dashboard');
   };
 
+  // F-003: Handle list submission
+  const handleListSubmit = async (items: string[]) => {
+    if (!deckId) return;
+
+    try {
+      clearMnemonicError();
+      await generateMnemonics(items, deckId);
+      // Generation successful - currentGeneration will be set by the store
+    } catch (error) {
+      setToast({
+        message: error instanceof Error ? error.message : 'Failed to generate mnemonics',
+        type: 'error'
+      });
+    }
+  };
+
+  // F-005: Handle mnemonic selection
+  const handleSelectMnemonic = async (selectedType: 'acrostic' | 'story' | 'visual') => {
+    if (!currentGeneration?.metadata.generation_id || !deckId) return;
+
+    try {
+      await selectMnemonic(
+        currentGeneration.metadata.generation_id,
+        selectedType,
+        deckId
+      );
+
+      setToast({
+        message: 'Mnemonic saved successfully! Generating flashcards...',
+        type: 'success'
+      });
+
+      // Clear the current generation
+      clearCurrentGeneration();
+
+      // Refresh the deck to show updated data
+      await fetchDeck(deckId);
+
+      // F-006: Auto-generate flashcards after mnemonic selection
+      try {
+        await generateFlashcards(deckId);
+        setToast({ message: 'Flashcards generated successfully!', type: 'success' });
+      } catch (flashcardError) {
+        setToast({
+          message: flashcardError instanceof Error ? flashcardError.message : 'Failed to generate flashcards',
+          type: 'error',
+        });
+      }
+    } catch (error) {
+      setToast({
+        message: error instanceof Error ? error.message : 'Failed to save mnemonic',
+        type: 'error'
+      });
+    }
+  };
+
+  const handleRegenerate = async () => {
+    // Show confirmation since regeneration uses a generation credit
+    const confirmed = window.confirm(
+      'This will use 1 generation credit. Are you sure you want to regenerate?'
+    );
+
+    if (!confirmed || !currentGeneration) return;
+
+    try {
+      // Extract the original items from the current generation
+      // We can parse them from the metadata or store them separately
+      // For now, we'll show a message
+      setToast({
+        message: 'Please go back and re-submit your list to regenerate',
+        type: 'error'
+      });
+
+      // TODO: Store original list items to enable true regeneration
+      // await generateMnemonics(originalItems, deckId);
+    } catch (error) {
+      setToast({
+        message: error instanceof Error ? error.message : 'Failed to regenerate mnemonics',
+        type: 'error'
+      });
+    }
+  };
+
+  // F-006: Handle flashcard generation
   const handleGenerateFlashcards = async () => {
     if (!deckId) return;
 
@@ -177,37 +273,46 @@ export const DeckDetailPage: React.FC = () => {
           </Card>
         </div>
 
-        {/* Flashcards Section */}
-        <FlashcardList
-          flashcards={flashcards}
-          loading={flashcardsLoading || generating}
-          deckHasMnemonic={Boolean(
-            currentDeck.selected_mnemonic_content && currentDeck.original_list
-          )}
-          onGenerateFlashcards={handleGenerateFlashcards}
-          onUpdateFlashcard={handleUpdateFlashcard}
-          onDeleteFlashcard={handleDeleteFlashcard}
-        />
+        {/* F-003: List Input Interface (show when no cards and no mnemonic generation in progress) */}
+        {currentDeck.card_count === 0 && !currentGeneration && (
+          <ListInputInterface
+            deckId={currentDeck.id}
+            onListSubmit={handleListSubmit}
+          />
+        )}
 
-        {/* Empty State / Add List Prompt - Placeholder for F-003 */}
-        {currentDeck.card_count === 0 &&
-          !currentDeck.selected_mnemonic_content &&
-          !flashcardsLoading && (
-            <Card className="p-8 text-center mt-8">
-              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Plus className="w-8 h-8 text-primary-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Add your first list</h3>
-              <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                Paste a list of items you want to memorize, and we'll generate AI-powered mnemonics
-                and flashcards for you.
-              </p>
-              <Button disabled>
-                <Plus className="w-5 h-5 mr-2" />
-                Add List (Coming in F-003)
-              </Button>
-            </Card>
-          )}
+        {/* F-004 & F-005: Mnemonic Selection (show when generation exists) */}
+        {currentGeneration && (
+          <Card className="p-8">
+            <MnemonicSelectionView
+              generation={currentGeneration}
+              onSelect={handleSelectMnemonic}
+              onRegenerate={handleRegenerate}
+              loading={mnemonicLoading}
+            />
+          </Card>
+        )}
+
+        {/* Show mnemonic error if any */}
+        {mnemonicError && !currentGeneration && (
+          <Card className="p-6 bg-error-50 border-error-200">
+            <p className="text-error-800 font-medium">{mnemonicError}</p>
+          </Card>
+        )}
+
+        {/* F-006: Flashcards Section (show when cards exist) */}
+        {currentDeck.card_count > 0 && (
+          <FlashcardList
+            flashcards={flashcards}
+            loading={flashcardsLoading || generating}
+            deckHasMnemonic={Boolean(
+              currentDeck.selected_mnemonic_content && currentDeck.original_list
+            )}
+            onGenerateFlashcards={handleGenerateFlashcards}
+            onUpdateFlashcard={handleUpdateFlashcard}
+            onDeleteFlashcard={handleDeleteFlashcard}
+          />
+        )}
       </main>
 
       {/* Modals */}

@@ -54,7 +54,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 /**
  * Deck Store
  */
-export const useDeckStore = create<DeckState>((set, get) => ({
+export const useDeckStore = create<DeckState>((set) => ({
   // Initial state
   decks: [],
   currentDeck: null,
