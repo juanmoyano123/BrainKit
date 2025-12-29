@@ -8,7 +8,6 @@ import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage';
 import { ResetPasswordPage } from '@/pages/ResetPasswordPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { DeckDetailPage } from '@/pages/DeckDetailPage';
-import { MnemonicSelectionPage } from '@/pages/MnemonicSelectionPage';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { useAuthStore, setupAuthListener } from '@/stores/authStore';
 
@@ -58,14 +57,6 @@ function App() {
             element={
               <ProtectedRoute>
                 <DeckDetailPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/decks/:deckId/select-mnemonic"
-            element={
-              <ProtectedRoute>
-                <MnemonicSelectionPage />
               </ProtectedRoute>
             }
           />
