@@ -2,7 +2,7 @@
  * Deck Detail Page
  *
  * Shows a single deck with its flashcards and study options.
- * Includes F-003 (List Input Interface) for adding items to memorize.
+ * Implements F-003 (List Input), F-004 (AI Mnemonics), F-005 (Mnemonic Selection), F-006 (Flashcard Generation).
  */
 
 import React, { useEffect, useState } from 'react';
@@ -10,13 +10,15 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import { useDeckStore } from '@/stores/deckStore';
 import { useMnemonicStore } from '@/stores/mnemonicStore';
+import { useFlashcardStore } from '@/stores/flashcardStore';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EditDeckModal } from '@/components/deck/EditDeckModal';
 import { DeleteDeckModal } from '@/components/deck/DeleteDeckModal';
-import { Toast } from '@/components/ui/Toast';
 import { ListInputInterface } from '@/components/deck/ListInputInterface';
 import { MnemonicSelectionView } from '@/components/deck/MnemonicSelectionView';
+import { FlashcardList } from '@/components/flashcard/FlashcardList';
+import { Toast } from '@/components/ui/Toast';
 
 export const DeckDetailPage: React.FC = () => {
   const { deckId } = useParams<{ deckId: string }>();
@@ -31,6 +33,15 @@ export const DeckDetailPage: React.FC = () => {
     clearCurrentGeneration,
     clearError: clearMnemonicError,
   } = useMnemonicStore();
+  const {
+    flashcards,
+    loading: flashcardsLoading,
+    generating,
+    fetchFlashcards,
+    generateFlashcards,
+    updateFlashcard,
+    deleteFlashcard,
+  } = useFlashcardStore();
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -39,8 +50,9 @@ export const DeckDetailPage: React.FC = () => {
   useEffect(() => {
     if (deckId) {
       fetchDeck(deckId);
+      fetchFlashcards(deckId);
     }
-  }, [deckId, fetchDeck]);
+  }, [deckId, fetchDeck, fetchFlashcards]);
 
   const handleEditDeck = async (id: string, name: string, description?: string) => {
     await updateDeck(id, name, description);
@@ -53,6 +65,7 @@ export const DeckDetailPage: React.FC = () => {
     navigate('/dashboard');
   };
 
+  // F-003: Handle list submission
   const handleListSubmit = async (items: string[]) => {
     if (!deckId) return;
 
@@ -68,6 +81,7 @@ export const DeckDetailPage: React.FC = () => {
     }
   };
 
+  // F-005: Handle mnemonic selection
   const handleSelectMnemonic = async (selectedType: 'acrostic' | 'story' | 'visual') => {
     if (!currentGeneration?.metadata.generation_id || !deckId) return;
 
@@ -89,8 +103,16 @@ export const DeckDetailPage: React.FC = () => {
       // Refresh the deck to show updated data
       await fetchDeck(deckId);
 
-      // TODO: F-006 - Navigate to flashcard generation
-      // For now, just show a success message
+      // F-006: Auto-generate flashcards after mnemonic selection
+      try {
+        await generateFlashcards(deckId);
+        setToast({ message: 'Flashcards generated successfully!', type: 'success' });
+      } catch (flashcardError) {
+        setToast({
+          message: flashcardError instanceof Error ? flashcardError.message : 'Failed to generate flashcards',
+          type: 'error',
+        });
+      }
     } catch (error) {
       setToast({
         message: error instanceof Error ? error.message : 'Failed to save mnemonic',
@@ -122,6 +144,53 @@ export const DeckDetailPage: React.FC = () => {
       setToast({
         message: error instanceof Error ? error.message : 'Failed to regenerate mnemonics',
         type: 'error'
+      });
+    }
+  };
+
+  // F-006: Handle flashcard generation
+  const handleGenerateFlashcards = async () => {
+    if (!deckId) return;
+
+    try {
+      await generateFlashcards(deckId);
+      setToast({ message: 'Flashcards generated successfully!', type: 'success' });
+      // Refresh deck to update card count
+      await fetchDeck(deckId);
+    } catch (error) {
+      setToast({
+        message: error instanceof Error ? error.message : 'Failed to generate flashcards',
+        type: 'error',
+      });
+    }
+  };
+
+  const handleUpdateFlashcard = async (
+    flashcardId: string,
+    front: string,
+    back: string,
+    difficulty: string
+  ) => {
+    try {
+      await updateFlashcard(flashcardId, front, back, difficulty);
+      setToast({ message: 'Flashcard updated successfully', type: 'success' });
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const handleDeleteFlashcard = async (flashcardId: string) => {
+    if (!deckId) return;
+
+    try {
+      await deleteFlashcard(flashcardId);
+      setToast({ message: 'Flashcard deleted', type: 'success' });
+      // Refresh deck to update card count
+      await fetchDeck(deckId);
+    } catch (error) {
+      setToast({
+        message: error instanceof Error ? error.message : 'Failed to delete flashcard',
+        type: 'error',
       });
     }
   };
@@ -204,7 +273,7 @@ export const DeckDetailPage: React.FC = () => {
           </Card>
         </div>
 
-        {/* F-003: List Input Interface */}
+        {/* F-003: List Input Interface (show when no cards and no mnemonic generation in progress) */}
         {currentDeck.card_count === 0 && !currentGeneration && (
           <ListInputInterface
             deckId={currentDeck.id}
@@ -212,7 +281,7 @@ export const DeckDetailPage: React.FC = () => {
           />
         )}
 
-        {/* F-004 & F-005: Mnemonic Selection */}
+        {/* F-004 & F-005: Mnemonic Selection (show when generation exists) */}
         {currentGeneration && (
           <Card className="p-8">
             <MnemonicSelectionView
@@ -229,6 +298,20 @@ export const DeckDetailPage: React.FC = () => {
           <Card className="p-6 bg-error-50 border-error-200">
             <p className="text-error-800 font-medium">{mnemonicError}</p>
           </Card>
+        )}
+
+        {/* F-006: Flashcards Section (show when cards exist) */}
+        {currentDeck.card_count > 0 && (
+          <FlashcardList
+            flashcards={flashcards}
+            loading={flashcardsLoading || generating}
+            deckHasMnemonic={Boolean(
+              currentDeck.selected_mnemonic_content && currentDeck.original_list
+            )}
+            onGenerateFlashcards={handleGenerateFlashcards}
+            onUpdateFlashcard={handleUpdateFlashcard}
+            onDeleteFlashcard={handleDeleteFlashcard}
+          />
         )}
       </main>
 

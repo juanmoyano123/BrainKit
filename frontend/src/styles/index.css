@@ -44,6 +44,20 @@
   .card {
     @apply bg-white border border-gray-200 rounded-card p-5 shadow-sm;
   }
+
+  /* Flashcard flip animation */
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
 }
 
 /* Accessibility: Reduced motion */
