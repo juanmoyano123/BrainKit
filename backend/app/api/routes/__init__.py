@@ -1,3 +1,3 @@
-from app.api.routes import auth, decks, flashcards, health, mnemonics
+from app.api.routes import auth, decks, flashcards, health, mnemonics, pdf, study
 
-__all__ = ["health", "auth", "decks", "mnemonics", "flashcards"]
+__all__ = ["health", "auth", "decks", "mnemonics", "flashcards", "pdf", "study"]
