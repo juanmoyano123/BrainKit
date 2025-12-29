@@ -225,6 +225,8 @@ async def update_deck(
             user_id=user_id,
             name=request.name,
             description=request.description,
+            selected_mnemonic_type=request.selected_mnemonic_type,
+            selected_mnemonic_content=request.selected_mnemonic_content,
         )
 
         if not deck:

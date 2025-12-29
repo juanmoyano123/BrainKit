@@ -41,6 +41,8 @@ class UpdateDeckRequest(BaseModel):
     """
     name: Optional[str] = Field(None, min_length=1, max_length=100, description="Deck name")
     description: Optional[str] = Field(None, max_length=500, description="Deck description")
+    selected_mnemonic_type: Optional[str] = Field(None, description="Selected mnemonic type: acrostic, story, or visual")
+    selected_mnemonic_content: Optional[str] = Field(None, description="Content of the selected mnemonic")
 
     @field_validator('name')
     @classmethod
@@ -49,6 +51,14 @@ class UpdateDeckRequest(BaseModel):
         if v is not None and not v.strip():
             raise ValueError('Deck name cannot be empty')
         return v.strip() if v else v
+
+    @field_validator('selected_mnemonic_type')
+    @classmethod
+    def validate_mnemonic_type(cls, v: Optional[str]) -> Optional[str]:
+        """Validate mnemonic type is one of the allowed values"""
+        if v is not None and v not in ['acrostic', 'story', 'visual']:
+            raise ValueError('Mnemonic type must be one of: acrostic, story, visual')
+        return v
 
     model_config = {
         "json_schema_extra": {

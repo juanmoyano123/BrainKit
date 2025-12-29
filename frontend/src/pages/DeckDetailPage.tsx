@@ -8,7 +8,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Pencil, Trash2, Plus } from 'lucide-react';
-import { useDeckStore, type Deck } from '@/stores/deckStore';
+import { useDeckStore } from '@/stores/deckStore';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EditDeckModal } from '@/components/deck/EditDeckModal';
@@ -18,7 +18,7 @@ import { Toast } from '@/components/ui/Toast';
 export const DeckDetailPage: React.FC = () => {
   const { deckId } = useParams<{ deckId: string }>();
   const navigate = useNavigate();
-  const { currentDeck, loading, error, fetchDeck, updateDeck, deleteDeck, clearError } = useDeckStore();
+  const { currentDeck, loading, error, fetchDeck, updateDeck, deleteDeck } = useDeckStore();
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);

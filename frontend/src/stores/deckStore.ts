@@ -45,6 +45,11 @@ interface DeckState {
   fetchDeck: (deckId: string) => Promise<Deck | null>;
   createDeck: (name: string, description?: string) => Promise<Deck>;
   updateDeck: (deckId: string, name?: string, description?: string) => Promise<Deck>;
+  updateSelectedMnemonic: (
+    deckId: string,
+    mnemonicType: 'acrostic' | 'story' | 'visual',
+    mnemonicContent: string
+  ) => Promise<Deck>;
   deleteDeck: (deckId: string) => Promise<void>;
   clearError: () => void;
 }
@@ -54,7 +59,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 /**
  * Deck Store
  */
-export const useDeckStore = create<DeckState>((set, get) => ({
+export const useDeckStore = create<DeckState>((set) => ({
   // Initial state
   decks: [],
   currentDeck: null,
@@ -198,6 +203,53 @@ export const useDeckStore = create<DeckState>((set, get) => ({
         }
         const errorData = await response.json();
         throw new Error(errorData.detail || 'Failed to update deck');
+      }
+
+      const updatedDeck = await response.json();
+      set((state) => ({
+        decks: state.decks.map((d) => (d.id === deckId ? updatedDeck : d)),
+        currentDeck: state.currentDeck?.id === deckId ? updatedDeck : state.currentDeck,
+        loading: false,
+      }));
+      return updatedDeck;
+    } catch (error) {
+      set({ loading: false });
+      throw error;
+    }
+  },
+
+  // Update selected mnemonic
+  updateSelectedMnemonic: async (
+    deckId: string,
+    mnemonicType: 'acrostic' | 'story' | 'visual',
+    mnemonicContent: string
+  ) => {
+    const { session } = useAuthStore.getState();
+    if (!session?.access_token) {
+      throw new Error('Not authenticated');
+    }
+
+    set({ loading: true, error: null });
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/decks/${deckId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          selected_mnemonic_type: mnemonicType,
+          selected_mnemonic_content: mnemonicContent,
+        }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('Deck not found');
+        }
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to update mnemonic selection');
       }
 
       const updatedDeck = await response.json();

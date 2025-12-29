@@ -122,15 +122,19 @@ class DeckService:
         user_id: str,
         name: Optional[str] = None,
         description: Optional[str] = None,
+        selected_mnemonic_type: Optional[str] = None,
+        selected_mnemonic_content: Optional[str] = None,
     ) -> Optional[Dict[str, Any]]:
         """
-        Update a deck's name and/or description.
+        Update a deck's name, description, and/or selected mnemonic.
 
         Args:
             deck_id: The deck's UUID
             user_id: The user's UUID (for ownership verification)
             name: New deck name (optional)
             description: New deck description (optional)
+            selected_mnemonic_type: Type of selected mnemonic (optional)
+            selected_mnemonic_content: Content of selected mnemonic (optional)
 
         Returns:
             Updated deck dictionary if successful, None if not found
@@ -145,6 +149,10 @@ class DeckService:
                 update_data["name"] = name
             if description is not None:
                 update_data["description"] = description
+            if selected_mnemonic_type is not None:
+                update_data["selected_mnemonic_type"] = selected_mnemonic_type
+            if selected_mnemonic_content is not None:
+                update_data["selected_mnemonic_content"] = selected_mnemonic_content
 
             if not update_data:
                 # Nothing to update, just return existing deck
