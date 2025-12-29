@@ -34,23 +34,65 @@ function sanitizeInput(input: string): string {
 
 /**
  * Parse various list formats into clean array of items
- * Handles: newlines, commas, numbered lists, bullet points
+ * Handles: newlines, commas, numbered lists, bullet points, mixed formats
+ *
+ * Examples:
+ * - "Item1\nItem2\nItem3" → ["Item1", "Item2", "Item3"]
+ * - "Item1, Item2, Item3" → ["Item1", "Item2", "Item3"]
+ * - "1. Item1\n2. Item2" → ["Item1", "Item2"]
+ * - "- Item1\n- Item2" → ["Item1", "Item2"]
+ * - Mixed formats also supported
  */
 function parseList(rawInput: string): string[] {
   const sanitized = sanitizeInput(rawInput);
 
-  // Split by common delimiters: newlines, commas, semicolons, numbered lists, bullet points
-  const items = sanitized
-    .split(/[\n,;]|(?:\d+\.)\s*|(?:[-*•])\s*/)
-    .map(item => item.trim())
-    .filter(item => item.length > 0);
+  // First, split by newlines to handle line-by-line parsing
+  const lines = sanitized.split(/\n/);
+  const items: string[] = [];
 
-  return items;
+  for (const line of lines) {
+    const trimmedLine = line.trim();
+    if (!trimmedLine) continue;
+
+    // Check if line contains comma-separated items (but not if it's already numbered/bulleted)
+    const hasNumbering = /^\d+[\.)]\s*/.test(trimmedLine);
+    const hasBullet = /^[-*•]\s*/.test(trimmedLine);
+
+    if (!hasNumbering && !hasBullet && trimmedLine.includes(',')) {
+      // Split by comma
+      const commaItems = trimmedLine
+        .split(/[,;]/)
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0);
+      items.push(...commaItems);
+    } else {
+      // Remove numbering or bullets and add single item
+      const cleaned = trimmedLine
+        .replace(/^\d+[\.)]\s*/, '') // Remove "1. " or "1) "
+        .replace(/^[-*•]\s*/, '') // Remove "- " or "* " or "• "
+        .trim();
+
+      if (cleaned) {
+        items.push(cleaned);
+      }
+    }
+  }
+
+  // Deduplicate items (case-insensitive) while preserving original case
+  const seen = new Set<string>();
+  const uniqueItems = items.filter((item) => {
+    const lowerItem = item.toLowerCase();
+    if (seen.has(lowerItem)) {
+      return false;
+    }
+    seen.add(lowerItem);
+    return true;
+  });
+
+  return uniqueItems;
 }
 
-export const ListInputInterface: React.FC<ListInputInterfaceProps> = ({
-  onListSubmit
-}) => {
+export const ListInputInterface: React.FC<ListInputInterfaceProps> = ({ onListSubmit }) => {
   const { loading: mnemonicLoading } = useMnemonicStore();
   const [rawInput, setRawInput] = useState('');
   const [items, setItems] = useState<string[]>([]);
@@ -88,7 +130,9 @@ export const ListInputInterface: React.FC<ListInputInterfaceProps> = ({
     }
 
     if (items.length > MAX_ITEMS) {
-      setError(`Maximum ${MAX_ITEMS} items per list. You entered ${items.length} items. Consider splitting into multiple decks.`);
+      setError(
+        `Maximum ${MAX_ITEMS} items per list. You entered ${items.length} items. Consider splitting into multiple decks.`
+      );
       return false;
     }
 
@@ -129,18 +173,18 @@ export const ListInputInterface: React.FC<ListInputInterfaceProps> = ({
   }, []);
 
   // Determine if button should be disabled
-  const isButtonDisabled = items.length === 0 || items.length < MIN_ITEMS || items.length > MAX_ITEMS || mnemonicLoading;
+  const isButtonDisabled =
+    items.length === 0 || items.length < MIN_ITEMS || items.length > MAX_ITEMS || mnemonicLoading;
 
   return (
     <Card className="p-6">
       <div className="space-y-4">
         {/* Header */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">
-            Add Items to Memorize
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-1">Add Items to Memorize</h3>
           <p className="text-sm text-gray-600">
-            Paste your list here. We support various formats: newlines, commas, numbered lists, or bullet points.
+            Paste your list here. We support various formats: newlines, commas, numbered lists, or
+            bullet points.
           </p>
         </div>
 
@@ -180,8 +224,8 @@ export const ListInputInterface: React.FC<ListInputInterfaceProps> = ({
                 items.length === 0
                   ? 'text-gray-500'
                   : items.length < MIN_ITEMS || items.length > MAX_ITEMS
-                  ? 'text-warning-600'
-                  : 'text-success-600'
+                    ? 'text-warning-600'
+                    : 'text-success-600'
               }`}
               aria-live="polite"
               aria-atomic="true"
@@ -207,7 +251,9 @@ export const ListInputInterface: React.FC<ListInputInterfaceProps> = ({
 
         {items.length > 10 && (
           <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-            <p className="text-xs font-medium text-gray-700 mb-2">Parsed items preview (showing first 10):</p>
+            <p className="text-xs font-medium text-gray-700 mb-2">
+              Parsed items preview (showing first 10):
+            </p>
             <ol className="text-xs text-gray-600 space-y-1 list-decimal list-inside">
               {items.slice(0, 10).map((item, index) => (
                 <li key={index}>{item}</li>
@@ -218,12 +264,7 @@ export const ListInputInterface: React.FC<ListInputInterfaceProps> = ({
         )}
 
         {/* Generate Button */}
-        <Button
-          onClick={handleSubmit}
-          disabled={isButtonDisabled}
-          className="w-full"
-          size="lg"
-        >
+        <Button onClick={handleSubmit} disabled={isButtonDisabled} className="w-full" size="lg">
           {mnemonicLoading ? (
             <>
               <div className="w-5 h-5 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -241,7 +282,9 @@ export const ListInputInterface: React.FC<ListInputInterfaceProps> = ({
         <div className="bg-primary-50 rounded-lg p-3 border border-primary-100">
           <p className="text-xs text-primary-900 font-medium mb-1">💡 Tips:</p>
           <ul className="text-xs text-primary-800 space-y-1 list-disc list-inside">
-            <li>Minimum {MIN_ITEMS} items, maximum {MAX_ITEMS} items per list</li>
+            <li>
+              Minimum {MIN_ITEMS} items, maximum {MAX_ITEMS} items per list
+            </li>
             <li>We'll automatically detect your list format</li>
             <li>For best results, use clear, concise terms</li>
           </ul>
