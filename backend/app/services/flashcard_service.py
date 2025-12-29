@@ -35,6 +35,31 @@ class FlashcardService:
         if settings.CLAUDE_API_KEY:
             self.claude_client = Anthropic(api_key=settings.CLAUDE_API_KEY)
 
+    def _detect_language(self, text: str) -> str:
+        """
+        Detect the language of the input text.
+
+        Args:
+            text: Text to detect language from
+
+        Returns:
+            Language code ('es' for Spanish, 'en' for English)
+        """
+        spanish_indicators = ['el', 'la', 'los', 'las', 'un', 'una', 'de', 'del', 'y', 'o', 'que', 'en', 'es', 'por', 'para', 'con', 'su', 'al', 'lo', 'como', 'más', 'pero']
+        english_indicators = ['the', 'be', 'to', 'of', 'and', 'a', 'in', 'that', 'have', 'it', 'for', 'not', 'on', 'with', 'he', 'as', 'you', 'do', 'at']
+
+        text_lower = text.lower()
+        words = text_lower.split()
+
+        spanish_count = sum(1 for word in words if word in spanish_indicators)
+        english_count = sum(1 for word in words if word in english_indicators)
+
+        # Check for Spanish-specific characters
+        if any(char in text for char in ['á', 'é', 'í', 'ó', 'ú', 'ñ', 'Á', 'É', 'Í', 'Ó', 'Ú', 'Ñ', '¿', '¡']):
+            spanish_count += 5
+
+        return 'es' if spanish_count > english_count else 'en'
+
     async def generate_flashcards(
         self,
         deck_id: str,
@@ -127,7 +152,55 @@ class FlashcardService:
         Raises:
             Exception: If Claude API call fails
         """
-        prompt = f"""You are an expert flashcard creator for professional memorization.
+        # Detect language from list items and mnemonic content
+        combined_text = f"{list_items} {mnemonic_content}"
+        detected_language = self._detect_language(combined_text)
+
+        # Build language-specific prompt
+        if detected_language == 'es':
+            prompt = f"""Eres un experto en crear flashcards para memorización profesional.
+
+El usuario necesita memorizar esta lista:
+{list_items}
+
+Han elegido esta técnica mnemotécnica para ayudar a recordarla:
+Tipo: {mnemonic_type}
+Contenido: {mnemonic_content}
+
+Crea 15-20 flashcards de alta calidad para ayudarles a:
+1. Memorizar cada elemento individual
+2. Recordar el orden/secuencia correcta
+3. Recordar la técnica mnemotécnica en sí
+4. Hacer asociaciones entre elementos
+
+Tipos de flashcards a incluir:
+- Recordatorio directo: "¿Qué es [elemento X]?" o "¿Qué representa [letra/posición]?"
+- Secuencia: "¿Qué viene después de [elemento]?" o "¿Cuál es el [N-ésimo] elemento?"
+- Recordatorio mnemotécnico: "En el mnemotécnico '[frase]', ¿qué te ayuda a recordar [parte]?"
+- Asociación: "¿Qué elemento está asociado con [elemento visual/de la historia]?"
+- Inverso: "¿Qué letra/número representa [elemento]?"
+
+Requisitos:
+- Las preguntas deben ser claras y sin ambigüedades
+- Las respuestas deben ser concisas pero completas
+- Incluye el contexto mnemotécnico en las respuestas cuando sea útil
+- Varía la dificultad de las preguntas (fácil, medio, difícil)
+- Cubre TODOS los elementos de la lista
+- Sin preguntas duplicadas
+- TODO debe estar en ESPAÑOL
+
+Devuelve solo en formato JSON, sin otro texto:
+{{
+  "flashcards": [
+    {{
+      "front": "Texto de la pregunta",
+      "back": "Texto de la respuesta",
+      "difficulty": "easy|medium|hard"
+    }}
+  ]
+}}"""
+        else:  # English
+            prompt = f"""You are an expert flashcard creator for professional memorization.
 
 The user needs to memorize this list:
 {list_items}
@@ -170,7 +243,7 @@ Output in JSON format only, no other text:
 
         try:
             message = self.claude_client.messages.create(
-                model="claude-3-5-sonnet-20241022",
+                model="claude-sonnet-4-20250514",  # Same model used in claude_service.py
                 max_tokens=4000,
                 messages=[
                     {"role": "user", "content": prompt}
@@ -179,6 +252,16 @@ Output in JSON format only, no other text:
 
             # Extract JSON from response
             response_text = message.content[0].text
+
+            # Handle markdown code blocks (Claude might wrap JSON in ``` markers)
+            if "```json" in response_text:
+                json_start = response_text.find("```json") + 7
+                json_end = response_text.find("```", json_start)
+                response_text = response_text[json_start:json_end].strip()
+            elif "```" in response_text:
+                json_start = response_text.find("```") + 3
+                json_end = response_text.find("```", json_start)
+                response_text = response_text[json_start:json_end].strip()
 
             # Parse JSON response
             result = json.loads(response_text)

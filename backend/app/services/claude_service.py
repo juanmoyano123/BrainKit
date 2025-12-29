@@ -30,12 +30,40 @@ class ClaudeService:
         self.max_tokens = 4096
         self.timeout = 30  # 30 seconds timeout
 
-    def _build_mnemonic_prompt(self, list_items: List[str]) -> str:
+    def _detect_language(self, text: str) -> str:
+        """
+        Detect the language of the input text.
+
+        Args:
+            text: Text to detect language from
+
+        Returns:
+            Language code ('es' for Spanish, 'en' for English, etc.)
+        """
+        # Simple heuristic-based detection for common Spanish/English words
+        spanish_indicators = ['el', 'la', 'los', 'las', 'un', 'una', 'de', 'del', 'y', 'o', 'que', 'en', 'es', 'por', 'para', 'con', 'su', 'al', 'lo', 'como', 'más', 'pero', 'sus', 'le', 'ya', 'todo', 'esta', 'fue', 'hasta', 'muy', 'ser', 'tiene', 'están', 'qué', 'también', 'durante', 'á', 'é', 'í', 'ó', 'ú', 'ñ']
+        english_indicators = ['the', 'be', 'to', 'of', 'and', 'a', 'in', 'that', 'have', 'i', 'it', 'for', 'not', 'on', 'with', 'he', 'as', 'you', 'do', 'at', 'this', 'but', 'his', 'by', 'from', 'they', 'we', 'say', 'her', 'she', 'or', 'an', 'will', 'my', 'one', 'all', 'would', 'there', 'their']
+
+        text_lower = text.lower()
+        words = text_lower.split()
+
+        spanish_count = sum(1 for word in words if word in spanish_indicators)
+        english_count = sum(1 for word in words if word in english_indicators)
+
+        # Check for Spanish-specific characters
+        if any(char in text for char in ['á', 'é', 'í', 'ó', 'ú', 'ñ', 'Á', 'É', 'Í', 'Ó', 'Ú', 'Ñ', '¿', '¡']):
+            spanish_count += 5
+
+        # Default to Spanish if more Spanish indicators, otherwise English
+        return 'es' if spanish_count > english_count else 'en'
+
+    def _build_mnemonic_prompt(self, list_items: List[str], language: str = 'en') -> str:
         """
         Build the prompt for Claude to generate mnemonics.
 
         Args:
             list_items: List of items to create mnemonics for
+            language: Language code ('es' for Spanish, 'en' for English)
 
         Returns:
             Formatted prompt string
@@ -43,7 +71,66 @@ class ClaudeService:
         item_count = len(list_items)
         items_formatted = "\n".join([f"{i+1}. {item}" for i, item in enumerate(list_items)])
 
-        prompt = f"""You are a memory expert specializing in mnemonic techniques for medical professionals.
+        # Language-specific instructions
+        if language == 'es':
+            prompt = f"""Eres un experto en memoria especializado en técnicas mnemotécnicas para profesionales médicos.
+
+Dada la siguiente lista de elementos para memorizar:
+{items_formatted}
+
+Genera TRES técnicas mnemotécnicas diferentes para ayudar a recordar esta lista:
+
+1. **TÉCNICA ACRÓSTICA**
+Crea una frase o oración memorable donde la primera letra de cada palabra corresponda a un elemento de la lista (en orden).
+- Formato: Frase/oración única
+- Incluye: La frase acróstica, luego la explicación de qué letra = qué elemento
+- Longitud máxima: 100 palabras
+
+2. **TÉCNICA DE HISTORIA NARRATIVA**
+Crea una historia corta vívida y memorable que incorpore TODOS los elementos en secuencia.
+- Usa detalles sensoriales y ganchos emocionales
+- Hazla ligeramente inusual o humorística (profesionalmente apropiada)
+- La historia debe fluir lógicamente para que recordar un elemento lleve al siguiente
+- Longitud máxima: 300 palabras
+
+3. **TÉCNICA DE PATRÓN VISUAL/ESPACIAL**
+Crea un mapa mental, viaje, o técnica de patrón visual.
+- Podría ser: Método de Loci (elementos colocados en ubicaciones familiares), agrupaciones visuales, o basado en patrones
+- Describe qué visualizar para cada elemento
+- Haz las imágenes vívidas e interactivas
+- Longitud máxima: 200 palabras
+
+Para cada técnica, incluye:
+- Un título corto
+- El contenido mnemotécnico
+- Una breve explicación "Cómo usar esto" (1-2 oraciones)
+
+IMPORTANTE:
+- Incluye TODOS los {item_count} elementos de la lista - no omitas ninguno
+- Mantén un lenguaje profesional pero memorable
+- Asegúrate de que cada técnica realmente ayude a recordar la lista en orden
+- TODO debe estar en ESPAÑOL
+
+Devuelve la respuesta en formato JSON:
+{{
+  "acrostic": {{
+    "title": "...",
+    "content": "...",
+    "how_to_use": "..."
+  }},
+  "story": {{
+    "title": "...",
+    "content": "...",
+    "how_to_use": "..."
+  }},
+  "visual": {{
+    "title": "...",
+    "content": "...",
+    "how_to_use": "..."
+  }}
+}}"""
+        else:  # English
+            prompt = f"""You are a memory expert specializing in mnemonic techniques for medical professionals.
 
 Given the following list of items to memorize:
 {items_formatted}
@@ -124,7 +211,42 @@ Output in JSON format:
         if len(text) > max_text_length:
             text = text[:max_text_length]
 
-        prompt = f"""You are an expert educator analyzing educational content.
+        # Detect language
+        detected_language = self._detect_language(text)
+
+        # Build language-specific prompt
+        if detected_language == 'es':
+            prompt = f"""Eres un educador experto analizando contenido educativo.
+
+Analiza el siguiente texto y extrae los CONCEPTOS CLAVE, HECHOS, o ELEMENTOS que un estudiante debe memorizar.
+
+REGLAS:
+- Extrae entre 10 y {max_concepts} elementos clave
+- Cada elemento debe ser un hecho, concepto, término o pieza de información discreta
+- Enfócate en contenido memorizable: definiciones, listas, secuencias, términos clave, hechos importantes
+- Cada elemento debe ser conciso (máximo 1-2 oraciones)
+- Los elementos deben ser específicos y accionables para el aprendizaje
+- Omite texto introductorio, contenido de relleno e información repetitiva
+- Prioriza los conceptos más importantes
+- TODO debe estar en ESPAÑOL
+
+TEXTO PARA ANALIZAR:
+---
+{text}
+---
+
+Devuelve tu respuesta como un objeto JSON con este formato:
+{{
+  "concepts": [
+    "Primer concepto o hecho clave",
+    "Segundo concepto o hecho clave",
+    ...
+  ]
+}}
+
+IMPORTANTE: Solo devuelve el objeto JSON, sin texto adicional."""
+        else:  # English
+            prompt = f"""You are an expert educator analyzing educational content.
 
 Analyze the following text and extract the KEY CONCEPTS, FACTS, or ITEMS that a student should memorize.
 
@@ -240,8 +362,12 @@ IMPORTANT: Only return the JSON object, no additional text."""
         if len(list_items) > 50:
             raise ValueError("List cannot contain more than 50 items")
 
-        # Build prompt
-        prompt = self._build_mnemonic_prompt(list_items)
+        # Detect language from the list items
+        combined_text = " ".join(list_items)
+        detected_language = self._detect_language(combined_text)
+
+        # Build prompt with detected language
+        prompt = self._build_mnemonic_prompt(list_items, language=detected_language)
 
         # Track generation time
         start_time = time.time()
