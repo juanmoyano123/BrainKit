@@ -9,7 +9,7 @@ import React, { useState } from 'react';
 import { Check, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { MnemonicGenerationResult, MnemonicTechnique } from '@/stores/mnemonicStore';
+import type { MnemonicGenerationResult, MnemonicTechnique } from '@/stores/mnemonicStore';
 
 interface MnemonicSelectionViewProps {
   generation: MnemonicGenerationResult;
