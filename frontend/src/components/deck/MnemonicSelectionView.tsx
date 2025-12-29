@@ -32,19 +32,19 @@ const MnemonicCard: React.FC<{
   const typeLabels = {
     acrostic: 'Acrostic',
     story: 'Story',
-    visual: 'Visual Pattern'
+    visual: 'Visual Pattern',
   };
 
   const typeDescriptions = {
     acrostic: 'First letters form a memorable phrase',
     story: 'Narrative connecting all items',
-    visual: 'Spatial/visual memory technique'
+    visual: 'Spatial/visual memory technique',
   };
 
   const typeIcons = {
     acrostic: '🔤',
     story: '📖',
-    visual: '🎨'
+    visual: '🎨',
   };
 
   return (
@@ -70,10 +70,10 @@ const MnemonicCard: React.FC<{
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-2xl" aria-hidden="true">{typeIcons[type]}</span>
-              <h3 className="text-lg font-semibold text-gray-900">
-                {typeLabels[type]}
-              </h3>
+              <span className="text-2xl" aria-hidden="true">
+                {typeIcons[type]}
+              </span>
+              <h3 className="text-lg font-semibold text-gray-900">{typeLabels[type]}</h3>
               {isSelected && (
                 <div className="ml-auto flex items-center gap-1 bg-primary-600 text-white px-2 py-1 rounded-full text-xs font-medium">
                   <Check className="w-3 h-3" />
@@ -118,9 +118,11 @@ const MnemonicCard: React.FC<{
               {/* Mnemonic Content */}
               <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                 <p className="text-sm font-medium text-gray-700 mb-2">The Mnemonic:</p>
-                <p className="text-gray-800 whitespace-pre-wrap leading-relaxed">
-                  {technique.content}
-                </p>
+                <div className="max-h-[300px] overflow-y-auto">
+                  <p className="text-gray-800 whitespace-pre-wrap leading-relaxed">
+                    {technique.content}
+                  </p>
+                </div>
               </div>
 
               {/* How to Use */}
@@ -151,11 +153,11 @@ export const MnemonicSelectionView: React.FC<MnemonicSelectionViewProps> = ({
   const handleSelect = (type: 'acrostic' | 'story' | 'visual') => {
     setSelectedType(type);
     // Auto-expand the selected card
-    setExpandedCards(prev => new Set([...prev, type]));
+    setExpandedCards((prev) => new Set([...prev, type]));
   };
 
   const toggleExpand = (type: string) => {
-    setExpandedCards(prev => {
+    setExpandedCards((prev) => {
       const next = new Set(prev);
       if (next.has(type)) {
         next.delete(type);
@@ -176,9 +178,7 @@ export const MnemonicSelectionView: React.FC<MnemonicSelectionViewProps> = ({
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold text-gray-900">
-          ✨ Your Mnemonics are Ready!
-        </h2>
+        <h2 className="text-2xl font-bold text-gray-900">✨ Your Mnemonics are Ready!</h2>
         <p className="text-gray-600">
           Choose the technique that works best for you. You can expand each to see full details.
         </p>
@@ -235,11 +235,7 @@ export const MnemonicSelectionView: React.FC<MnemonicSelectionViewProps> = ({
       {/* Action Buttons */}
       <div className="flex items-center justify-center gap-4">
         {onRegenerate && (
-          <Button
-            variant="secondary"
-            onClick={onRegenerate}
-            disabled={loading}
-          >
+          <Button variant="secondary" onClick={onRegenerate} disabled={loading}>
             <RefreshCw className="w-4 h-4 mr-2" />
             Regenerate Options
           </Button>
@@ -267,7 +263,8 @@ export const MnemonicSelectionView: React.FC<MnemonicSelectionViewProps> = ({
 
       {/* Generation Info */}
       <div className="text-center text-xs text-gray-500">
-        Generated in {(generation.metadata.generation_time_ms / 1000).toFixed(1)}s using {generation.metadata.model}
+        Generated in {(generation.metadata.generation_time_ms / 1000).toFixed(1)}s using{' '}
+        {generation.metadata.model}
       </div>
     </div>
   );
