@@ -2,23 +2,34 @@
  * Deck Detail Page
  *
  * Shows a single deck with its flashcards and study options.
- * This is a placeholder for F-003 (List Input Interface).
+ * Implements F-006: AI Flashcard Generation.
  */
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Pencil, Trash2, Plus } from 'lucide-react';
 import { useDeckStore, type Deck } from '@/stores/deckStore';
+import { useFlashcardStore } from '@/stores/flashcardStore';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EditDeckModal } from '@/components/deck/EditDeckModal';
 import { DeleteDeckModal } from '@/components/deck/DeleteDeckModal';
+import { FlashcardList } from '@/components/flashcard/FlashcardList';
 import { Toast } from '@/components/ui/Toast';
 
 export const DeckDetailPage: React.FC = () => {
   const { deckId } = useParams<{ deckId: string }>();
   const navigate = useNavigate();
   const { currentDeck, loading, error, fetchDeck, updateDeck, deleteDeck, clearError } = useDeckStore();
+  const {
+    flashcards,
+    loading: flashcardsLoading,
+    generating,
+    fetchFlashcards,
+    generateFlashcards,
+    updateFlashcard,
+    deleteFlashcard,
+  } = useFlashcardStore();
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -27,8 +38,9 @@ export const DeckDetailPage: React.FC = () => {
   useEffect(() => {
     if (deckId) {
       fetchDeck(deckId);
+      fetchFlashcards(deckId);
     }
-  }, [deckId, fetchDeck]);
+  }, [deckId, fetchDeck, fetchFlashcards]);
 
   const handleEditDeck = async (id: string, name: string, description?: string) => {
     await updateDeck(id, name, description);
@@ -39,6 +51,52 @@ export const DeckDetailPage: React.FC = () => {
     await deleteDeck(id);
     setToast({ message: 'Deck deleted', type: 'success' });
     navigate('/dashboard');
+  };
+
+  const handleGenerateFlashcards = async () => {
+    if (!deckId) return;
+
+    try {
+      await generateFlashcards(deckId);
+      setToast({ message: 'Flashcards generated successfully!', type: 'success' });
+      // Refresh deck to update card count
+      await fetchDeck(deckId);
+    } catch (error) {
+      setToast({
+        message: error instanceof Error ? error.message : 'Failed to generate flashcards',
+        type: 'error',
+      });
+    }
+  };
+
+  const handleUpdateFlashcard = async (
+    flashcardId: string,
+    front: string,
+    back: string,
+    difficulty: string
+  ) => {
+    try {
+      await updateFlashcard(flashcardId, front, back, difficulty);
+      setToast({ message: 'Flashcard updated successfully', type: 'success' });
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const handleDeleteFlashcard = async (flashcardId: string) => {
+    if (!deckId) return;
+
+    try {
+      await deleteFlashcard(flashcardId);
+      setToast({ message: 'Flashcard deleted', type: 'success' });
+      // Refresh deck to update card count
+      await fetchDeck(deckId);
+    } catch (error) {
+      setToast({
+        message: error instanceof Error ? error.message : 'Failed to delete flashcard',
+        type: 'error',
+      });
+    }
   };
 
   if (loading) {
@@ -119,23 +177,37 @@ export const DeckDetailPage: React.FC = () => {
           </Card>
         </div>
 
+        {/* Flashcards Section */}
+        <FlashcardList
+          flashcards={flashcards}
+          loading={flashcardsLoading || generating}
+          deckHasMnemonic={Boolean(
+            currentDeck.selected_mnemonic_content && currentDeck.original_list
+          )}
+          onGenerateFlashcards={handleGenerateFlashcards}
+          onUpdateFlashcard={handleUpdateFlashcard}
+          onDeleteFlashcard={handleDeleteFlashcard}
+        />
+
         {/* Empty State / Add List Prompt - Placeholder for F-003 */}
-        {currentDeck.card_count === 0 && (
-          <Card className="p-8 text-center">
-            <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Plus className="w-8 h-8 text-primary-600" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Add your first list</h3>
-            <p className="text-gray-600 mb-6 max-w-md mx-auto">
-              Paste a list of items you want to memorize, and we'll generate AI-powered mnemonics
-              and flashcards for you.
-            </p>
-            <Button disabled>
-              <Plus className="w-5 h-5 mr-2" />
-              Add List (Coming in F-003)
-            </Button>
-          </Card>
-        )}
+        {currentDeck.card_count === 0 &&
+          !currentDeck.selected_mnemonic_content &&
+          !flashcardsLoading && (
+            <Card className="p-8 text-center mt-8">
+              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Plus className="w-8 h-8 text-primary-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Add your first list</h3>
+              <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                Paste a list of items you want to memorize, and we'll generate AI-powered mnemonics
+                and flashcards for you.
+              </p>
+              <Button disabled>
+                <Plus className="w-5 h-5 mr-2" />
+                Add List (Coming in F-003)
+              </Button>
+            </Card>
+          )}
       </main>
 
       {/* Modals */}

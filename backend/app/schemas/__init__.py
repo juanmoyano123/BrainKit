@@ -18,8 +18,25 @@ from app.schemas.auth import (
     SessionResponse,
     UserResponse,
 )
+from app.schemas.deck import (
+    CreateDeckRequest,
+    DeckListResponse,
+    DeckResponse,
+    DeckSummaryResponse,
+    UpdateDeckRequest,
+)
+from app.schemas.flashcard import (
+    CreateFlashcardRequest,
+    FlashcardListResponse,
+    FlashcardResponse,
+    FlashcardSummary,
+    GenerateFlashcardsRequest,
+    GenerateFlashcardsResponse,
+    UpdateFlashcardRequest,
+)
 
 __all__ = [
+    # Auth
     "RegisterRequest",
     "LoginRequest",
     "GoogleLoginRequest",
@@ -32,4 +49,18 @@ __all__ = [
     "AuthResponse",
     "MessageResponse",
     "ErrorResponse",
+    # Deck
+    "CreateDeckRequest",
+    "UpdateDeckRequest",
+    "DeckResponse",
+    "DeckListResponse",
+    "DeckSummaryResponse",
+    # Flashcard
+    "GenerateFlashcardsRequest",
+    "CreateFlashcardRequest",
+    "UpdateFlashcardRequest",
+    "FlashcardResponse",
+    "FlashcardListResponse",
+    "FlashcardSummary",
+    "GenerateFlashcardsResponse",
 ]
