@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import auth, decks, health
+from app.api.routes import auth, decks, health, mnemonics
 from app.core.config import settings
 
 app = FastAPI(
@@ -24,6 +24,7 @@ app.add_middleware(
 app.include_router(health.router, prefix=settings.API_V1_STR, tags=["health"])
 app.include_router(auth.router, prefix=settings.API_V1_STR, tags=["auth"])
 app.include_router(decks.router, prefix=settings.API_V1_STR, tags=["decks"])
+app.include_router(mnemonics.router, prefix=settings.API_V1_STR, tags=["mnemonics"])
 
 
 @app.get("/")

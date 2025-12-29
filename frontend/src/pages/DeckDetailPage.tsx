@@ -9,17 +9,28 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import { useDeckStore } from '@/stores/deckStore';
+import { useMnemonicStore } from '@/stores/mnemonicStore';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EditDeckModal } from '@/components/deck/EditDeckModal';
 import { DeleteDeckModal } from '@/components/deck/DeleteDeckModal';
 import { Toast } from '@/components/ui/Toast';
 import { ListInputInterface } from '@/components/deck/ListInputInterface';
+import { MnemonicSelectionView } from '@/components/deck/MnemonicSelectionView';
 
 export const DeckDetailPage: React.FC = () => {
   const { deckId } = useParams<{ deckId: string }>();
   const navigate = useNavigate();
   const { currentDeck, loading, error, fetchDeck, updateDeck, deleteDeck } = useDeckStore();
+  const {
+    currentGeneration,
+    loading: mnemonicLoading,
+    error: mnemonicError,
+    generateMnemonics,
+    selectMnemonic,
+    clearCurrentGeneration,
+    clearError: clearMnemonicError,
+  } = useMnemonicStore();
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -40,6 +51,79 @@ export const DeckDetailPage: React.FC = () => {
     await deleteDeck(id);
     setToast({ message: 'Deck deleted', type: 'success' });
     navigate('/dashboard');
+  };
+
+  const handleListSubmit = async (items: string[]) => {
+    if (!deckId) return;
+
+    try {
+      clearMnemonicError();
+      await generateMnemonics(items, deckId);
+      // Generation successful - currentGeneration will be set by the store
+    } catch (error) {
+      setToast({
+        message: error instanceof Error ? error.message : 'Failed to generate mnemonics',
+        type: 'error'
+      });
+    }
+  };
+
+  const handleSelectMnemonic = async (selectedType: 'acrostic' | 'story' | 'visual') => {
+    if (!currentGeneration?.metadata.generation_id || !deckId) return;
+
+    try {
+      await selectMnemonic(
+        currentGeneration.metadata.generation_id,
+        selectedType,
+        deckId
+      );
+
+      setToast({
+        message: 'Mnemonic saved successfully! Generating flashcards...',
+        type: 'success'
+      });
+
+      // Clear the current generation
+      clearCurrentGeneration();
+
+      // Refresh the deck to show updated data
+      await fetchDeck(deckId);
+
+      // TODO: F-006 - Navigate to flashcard generation
+      // For now, just show a success message
+    } catch (error) {
+      setToast({
+        message: error instanceof Error ? error.message : 'Failed to save mnemonic',
+        type: 'error'
+      });
+    }
+  };
+
+  const handleRegenerate = async () => {
+    // Show confirmation since regeneration uses a generation credit
+    const confirmed = window.confirm(
+      'This will use 1 generation credit. Are you sure you want to regenerate?'
+    );
+
+    if (!confirmed || !currentGeneration) return;
+
+    try {
+      // Extract the original items from the current generation
+      // We can parse them from the metadata or store them separately
+      // For now, we'll show a message
+      setToast({
+        message: 'Please go back and re-submit your list to regenerate',
+        type: 'error'
+      });
+
+      // TODO: Store original list items to enable true regeneration
+      // await generateMnemonics(originalItems, deckId);
+    } catch (error) {
+      setToast({
+        message: error instanceof Error ? error.message : 'Failed to regenerate mnemonics',
+        type: 'error'
+      });
+    }
   };
 
   if (loading) {
@@ -121,14 +205,30 @@ export const DeckDetailPage: React.FC = () => {
         </div>
 
         {/* F-003: List Input Interface */}
-        {currentDeck.card_count === 0 && (
+        {currentDeck.card_count === 0 && !currentGeneration && (
           <ListInputInterface
             deckId={currentDeck.id}
-            onListSubmit={(items) => {
-              console.log('List submitted:', items);
-              // TODO: F-004 - Call mnemonic generation API
-            }}
+            onListSubmit={handleListSubmit}
           />
+        )}
+
+        {/* F-004 & F-005: Mnemonic Selection */}
+        {currentGeneration && (
+          <Card className="p-8">
+            <MnemonicSelectionView
+              generation={currentGeneration}
+              onSelect={handleSelectMnemonic}
+              onRegenerate={handleRegenerate}
+              loading={mnemonicLoading}
+            />
+          </Card>
+        )}
+
+        {/* Show mnemonic error if any */}
+        {mnemonicError && !currentGeneration && (
+          <Card className="p-6 bg-error-50 border-error-200">
+            <p className="text-error-800 font-medium">{mnemonicError}</p>
+          </Card>
         )}
       </main>
 
