@@ -2,23 +2,24 @@
  * Deck Detail Page
  *
  * Shows a single deck with its flashcards and study options.
- * This is a placeholder for F-003 (List Input Interface).
+ * Includes F-003 (List Input Interface) for adding items to memorize.
  */
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Pencil, Trash2, Plus } from 'lucide-react';
-import { useDeckStore, type Deck } from '@/stores/deckStore';
+import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
+import { useDeckStore } from '@/stores/deckStore';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EditDeckModal } from '@/components/deck/EditDeckModal';
 import { DeleteDeckModal } from '@/components/deck/DeleteDeckModal';
 import { Toast } from '@/components/ui/Toast';
+import { ListInputInterface } from '@/components/deck/ListInputInterface';
 
 export const DeckDetailPage: React.FC = () => {
   const { deckId } = useParams<{ deckId: string }>();
   const navigate = useNavigate();
-  const { currentDeck, loading, error, fetchDeck, updateDeck, deleteDeck, clearError } = useDeckStore();
+  const { currentDeck, loading, error, fetchDeck, updateDeck, deleteDeck } = useDeckStore();
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -119,22 +120,15 @@ export const DeckDetailPage: React.FC = () => {
           </Card>
         </div>
 
-        {/* Empty State / Add List Prompt - Placeholder for F-003 */}
+        {/* F-003: List Input Interface */}
         {currentDeck.card_count === 0 && (
-          <Card className="p-8 text-center">
-            <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Plus className="w-8 h-8 text-primary-600" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Add your first list</h3>
-            <p className="text-gray-600 mb-6 max-w-md mx-auto">
-              Paste a list of items you want to memorize, and we'll generate AI-powered mnemonics
-              and flashcards for you.
-            </p>
-            <Button disabled>
-              <Plus className="w-5 h-5 mr-2" />
-              Add List (Coming in F-003)
-            </Button>
-          </Card>
+          <ListInputInterface
+            deckId={currentDeck.id}
+            onListSubmit={(items) => {
+              console.log('List submitted:', items);
+              // TODO: F-004 - Call mnemonic generation API
+            }}
+          />
         )}
       </main>
 
