@@ -17,6 +17,7 @@ const mockFlashcard = {
   interval_days: 1,
   repetitions: 0,
   next_review_date: null,
+  last_reviewed_at: null,
   is_edited: false,
   created_at: '2025-01-01T00:00:00Z',
   updated_at: '2025-01-01T00:00:00Z',
