@@ -83,7 +83,8 @@ describe('FlashcardPreview', () => {
     it('should handle long content', () => {
       const longCard = {
         ...mockFlashcard,
-        front: 'This is a very long question that should be displayed correctly without breaking the layout and maintaining good UX',
+        front:
+          'This is a very long question that should be displayed correctly without breaking the layout and maintaining good UX',
       };
 
       render(<FlashcardPreview flashcard={longCard} />);

@@ -21,7 +21,6 @@ export const StudySessionPage: React.FC = () => {
   const navigate = useNavigate();
 
   const {
-    currentSession,
     dueCards,
     currentCardIndex,
     isStudying,
@@ -54,7 +53,7 @@ export const StudySessionPage: React.FC = () => {
     return () => {
       resetSession();
     };
-  }, [deckId]);
+  }, [deckId, startSession, resetSession]);
 
   const handleShowAnswer = () => {
     setShowAnswer(true);

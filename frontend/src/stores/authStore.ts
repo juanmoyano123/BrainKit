@@ -76,80 +76,11 @@ export const useAuthStore = create<AuthState>()(
       // Set loading
       setLoading: (loading) => set({ loading }),
 
-      // Initialize auth state
+      // Initialize auth state - just trigger getSession, listener handles the rest
       initialize: async () => {
         try {
-          set({ loading: true });
-
-          // Get current session from Supabase
-          const {
-            data: { session },
-          } = await supabase.auth.getSession();
-
-          if (session) {
-            // Session exists, fetch user and profile
-            const {
-              data: { user },
-            } = await supabase.auth.getUser();
-
-            if (user) {
-              // Fetch profile from backend (profiles table is in PostgreSQL, not Supabase)
-              try {
-                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/auth/me`, {
-                  headers: {
-                    Authorization: `Bearer ${session.access_token}`,
-                  },
-                });
-
-                if (response.ok) {
-                  const data = await response.json();
-                  set({
-                    user,
-                    profile: data.profile as UserProfile,
-                    session,
-                    loading: false,
-                    initialized: true,
-                  });
-                } else {
-                  // Profile doesn't exist yet, continue without it
-                  set({
-                    user,
-                    profile: null,
-                    session,
-                    loading: false,
-                    initialized: true,
-                  });
-                }
-              } catch (profileError) {
-                console.error('Error fetching profile:', profileError);
-                // Continue without profile
-                set({
-                  user,
-                  profile: null,
-                  session,
-                  loading: false,
-                  initialized: true,
-                });
-              }
-            } else {
-              set({
-                user: null,
-                profile: null,
-                session: null,
-                loading: false,
-                initialized: true,
-              });
-            }
-          } else {
-            // No session
-            set({
-              user: null,
-              profile: null,
-              session: null,
-              loading: false,
-              initialized: true,
-            });
-          }
+          // This will trigger onAuthStateChange with INITIAL_SESSION event
+          await supabase.auth.getSession();
         } catch (error) {
           console.error('Error initializing auth:', error);
           set({
@@ -221,40 +152,54 @@ export const setupAuthListener = () => {
   supabase.auth.onAuthStateChange(async (event, session) => {
     console.log('Auth state changed:', event);
 
-    if (event === 'SIGNED_IN' && session) {
-      // User signed in
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+    // Handle session events (SIGNED_IN, TOKEN_REFRESHED, INITIAL_SESSION)
+    if (session) {
+      console.log('Session exists, setting state directly...');
 
-      if (user) {
-        const { data: profile } = await supabase
+      // Set state immediately with session data - don't wait for profile
+      useAuthStore.setState({
+        user: session.user,
+        session,
+        loading: false,
+        initialized: true,
+      });
+
+      console.log('State set, loading profile in background...');
+
+      // Fetch profile in background (non-blocking)
+      try {
+        const { data: profileData } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', user.id)
+          .eq('id', session.user.id)
           .single();
 
-        useAuthStore.setState({
-          user,
-          profile: profile as UserProfile,
-          session,
-          loading: false,
-        });
+        if (profileData) {
+          useAuthStore.setState({
+            profile: profileData as UserProfile,
+          });
+          console.log('Profile loaded');
+        }
+      } catch {
+        console.log('Profile fetch failed, continuing without it');
       }
-    } else if (event === 'SIGNED_OUT') {
-      // User signed out
+    } else if (event === 'SIGNED_OUT' || !session) {
+      // User signed out or no session
       useAuthStore.setState({
         user: null,
         profile: null,
         session: null,
         loading: false,
+        initialized: true,
       });
-    } else if (event === 'TOKEN_REFRESHED' && session) {
+    } else if (event === 'TOKEN_REFRESHED') {
       // Token refreshed
-      useAuthStore.setState({
-        session,
-      });
-    } else if (event === 'USER_UPDATED' && session) {
+      if (session) {
+        useAuthStore.setState({
+          session,
+        });
+      }
+    } else if (event === 'USER_UPDATED') {
       // User updated, refresh profile
       const {
         data: { user },

@@ -7,16 +7,18 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
+import { ArrowLeft, Pencil, Trash2, FileUp, BookOpen } from 'lucide-react';
 import { useDeckStore } from '@/stores/deckStore';
 import { useMnemonicStore } from '@/stores/mnemonicStore';
 import { useFlashcardStore } from '@/stores/flashcardStore';
+import type { PDFUploadResponse } from '@/stores/pdfStore';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EditDeckModal } from '@/components/deck/EditDeckModal';
 import { DeleteDeckModal } from '@/components/deck/DeleteDeckModal';
 import { ListInputInterface } from '@/components/deck/ListInputInterface';
 import { MnemonicSelectionView } from '@/components/deck/MnemonicSelectionView';
+import { PDFUploadModal } from '@/components/deck/PDFUploadModal';
 import { FlashcardList } from '@/components/flashcard/FlashcardList';
 import { Toast } from '@/components/ui/Toast';
 
@@ -45,6 +47,7 @@ export const DeckDetailPage: React.FC = () => {
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isPDFModalOpen, setIsPDFModalOpen] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
@@ -65,6 +68,24 @@ export const DeckDetailPage: React.FC = () => {
     navigate('/dashboard');
   };
 
+  // Handle PDF upload success
+  const handlePDFSuccess = (result: PDFUploadResponse) => {
+    // Set the current generation from PDF result
+    useMnemonicStore.setState({
+      currentGeneration: {
+        acrostic: result.mnemonics.acrostic,
+        story: result.mnemonics.story,
+        visual: result.mnemonics.visual,
+        metadata: result.metadata,
+      },
+    });
+
+    setToast({
+      message: `Extracted ${result.concept_count} concepts from PDF! Select a mnemonic technique.`,
+      type: 'success',
+    });
+  };
+
   // F-003: Handle list submission
   const handleListSubmit = async (items: string[]) => {
     if (!deckId) return;
@@ -76,7 +97,7 @@ export const DeckDetailPage: React.FC = () => {
     } catch (error) {
       setToast({
         message: error instanceof Error ? error.message : 'Failed to generate mnemonics',
-        type: 'error'
+        type: 'error',
       });
     }
   };
@@ -86,15 +107,11 @@ export const DeckDetailPage: React.FC = () => {
     if (!currentGeneration?.metadata.generation_id || !deckId) return;
 
     try {
-      await selectMnemonic(
-        currentGeneration.metadata.generation_id,
-        selectedType,
-        deckId
-      );
+      await selectMnemonic(currentGeneration.metadata.generation_id, selectedType, deckId);
 
       setToast({
         message: 'Mnemonic saved successfully! Generating flashcards...',
-        type: 'success'
+        type: 'success',
       });
 
       // Clear the current generation
@@ -109,14 +126,17 @@ export const DeckDetailPage: React.FC = () => {
         setToast({ message: 'Flashcards generated successfully!', type: 'success' });
       } catch (flashcardError) {
         setToast({
-          message: flashcardError instanceof Error ? flashcardError.message : 'Failed to generate flashcards',
+          message:
+            flashcardError instanceof Error
+              ? flashcardError.message
+              : 'Failed to generate flashcards',
           type: 'error',
         });
       }
     } catch (error) {
       setToast({
         message: error instanceof Error ? error.message : 'Failed to save mnemonic',
-        type: 'error'
+        type: 'error',
       });
     }
   };
@@ -135,7 +155,7 @@ export const DeckDetailPage: React.FC = () => {
       // For now, we'll show a message
       setToast({
         message: 'Please go back and re-submit your list to regenerate',
-        type: 'error'
+        type: 'error',
       });
 
       // TODO: Store original list items to enable true regeneration
@@ -143,7 +163,7 @@ export const DeckDetailPage: React.FC = () => {
     } catch (error) {
       setToast({
         message: error instanceof Error ? error.message : 'Failed to regenerate mnemonics',
-        type: 'error'
+        type: 'error',
       });
     }
   };
@@ -171,12 +191,8 @@ export const DeckDetailPage: React.FC = () => {
     back: string,
     difficulty: string
   ) => {
-    try {
-      await updateFlashcard(flashcardId, front, back, difficulty);
-      setToast({ message: 'Flashcard updated successfully', type: 'success' });
-    } catch (error) {
-      throw error;
-    }
+    await updateFlashcard(flashcardId, front, back, difficulty);
+    setToast({ message: 'Flashcard updated successfully', type: 'success' });
   };
 
   const handleDeleteFlashcard = async (flashcardId: string) => {
@@ -228,10 +244,10 @@ export const DeckDetailPage: React.FC = () => {
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back
               </Button>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">{currentDeck.name}</h1>
+              <div className="flex-1 min-w-0">
+                <h1 className="text-2xl font-bold text-gray-900 truncate">{currentDeck.name}</h1>
                 {currentDeck.description && (
-                  <p className="text-sm text-gray-600">{currentDeck.description}</p>
+                  <p className="text-sm text-gray-600 line-clamp-2">{currentDeck.description}</p>
                 )}
               </div>
             </div>
@@ -273,12 +289,33 @@ export const DeckDetailPage: React.FC = () => {
           </Card>
         </div>
 
+        {/* Study Button (F-007: SRS Study System) */}
+        {currentDeck.card_count > 0 && !currentGeneration && (
+          <div className="mb-8">
+            <Button
+              size="lg"
+              className="w-full md:w-auto"
+              onClick={() => navigate(`/study/${currentDeck.id}`)}
+            >
+              <BookOpen className="w-5 h-5 mr-2" />
+              Start Studying
+            </Button>
+          </div>
+        )}
+
         {/* F-003: List Input Interface (show when no cards and no mnemonic generation in progress) */}
         {currentDeck.card_count === 0 && !currentGeneration && (
-          <ListInputInterface
-            deckId={currentDeck.id}
-            onListSubmit={handleListSubmit}
-          />
+          <div className="space-y-4">
+            {/* PDF Upload Button */}
+            <div className="flex justify-end">
+              <Button variant="secondary" onClick={() => setIsPDFModalOpen(true)}>
+                <FileUp className="w-4 h-4 mr-2" />
+                Import from PDF
+              </Button>
+            </div>
+
+            <ListInputInterface deckId={currentDeck.id} onListSubmit={handleListSubmit} />
+          </div>
         )}
 
         {/* F-004 & F-005: Mnemonic Selection (show when generation exists) */}
@@ -330,14 +367,15 @@ export const DeckDetailPage: React.FC = () => {
         onConfirm={handleDeleteDeck}
       />
 
+      <PDFUploadModal
+        isOpen={isPDFModalOpen}
+        onClose={() => setIsPDFModalOpen(false)}
+        deckId={currentDeck.id}
+        onSuccess={handlePDFSuccess}
+      />
+
       {/* Toast */}
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   );
 };

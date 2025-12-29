@@ -6,7 +6,7 @@
  * before generating mnemonics.
  */
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useRef } from 'react';
 import { Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Textarea } from '@/components/ui/Textarea';
@@ -55,7 +55,7 @@ function parseList(rawInput: string): string[] {
     if (!trimmedLine) continue;
 
     // Check if line contains comma-separated items (but not if it's already numbered/bulleted)
-    const hasNumbering = /^\d+[\.)]\s*/.test(trimmedLine);
+    const hasNumbering = /^\d+[.)]\s*/.test(trimmedLine);
     const hasBullet = /^[-*•]\s*/.test(trimmedLine);
 
     if (!hasNumbering && !hasBullet && trimmedLine.includes(',')) {
@@ -68,7 +68,7 @@ function parseList(rawInput: string): string[] {
     } else {
       // Remove numbering or bullets and add single item
       const cleaned = trimmedLine
-        .replace(/^\d+[\.)]\s*/, '') // Remove "1. " or "1) "
+        .replace(/^\d+[.)]\s*/, '') // Remove "1. " or "1) "
         .replace(/^[-*•]\s*/, '') // Remove "- " or "* " or "• "
         .trim();
 
@@ -95,24 +95,15 @@ function parseList(rawInput: string): string[] {
 export const ListInputInterface: React.FC<ListInputInterfaceProps> = ({ onListSubmit }) => {
   const { loading: mnemonicLoading } = useMnemonicStore();
   const [rawInput, setRawInput] = useState('');
-  const [items, setItems] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const previousInputRef = useRef('');
 
-  // Parse input whenever it changes
-  useEffect(() => {
+  // Parse input whenever it changes using useMemo to avoid setState in effect
+  const items = useMemo(() => {
     if (!rawInput.trim()) {
-      setItems([]);
-      setError(null);
-      return;
+      return [];
     }
-
-    const parsedItems = parseList(rawInput);
-    setItems(parsedItems);
-
-    // Clear error when user is typing
-    if (error) {
-      setError(null);
-    }
+    return parseList(rawInput);
   }, [rawInput]);
 
   /**
@@ -161,16 +152,25 @@ export const ListInputInterface: React.FC<ListInputInterfaceProps> = ({ onListSu
   /**
    * Handle input change with length validation
    */
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value;
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const value = e.target.value;
 
-    if (value.length > MAX_INPUT_LENGTH) {
-      setError(`Input is too large. Maximum ${MAX_INPUT_LENGTH} characters allowed.`);
-      return;
-    }
+      if (value.length > MAX_INPUT_LENGTH) {
+        setError(`Input is too large. Maximum ${MAX_INPUT_LENGTH} characters allowed.`);
+        return;
+      }
 
-    setRawInput(value);
-  }, []);
+      // Clear error when user starts typing again
+      if (error && value !== previousInputRef.current) {
+        setError(null);
+      }
+      previousInputRef.current = value;
+
+      setRawInput(value);
+    },
+    [error]
+  );
 
   // Determine if button should be disabled
   const isButtonDisabled =
