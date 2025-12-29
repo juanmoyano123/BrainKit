@@ -101,6 +101,112 @@ Output in JSON format:
 
         return prompt
 
+    async def extract_key_concepts(
+        self,
+        text: str,
+        max_concepts: int = 30,
+    ) -> List[str]:
+        """
+        Extract key concepts from a long text for memorization.
+
+        Args:
+            text: The text to extract concepts from
+            max_concepts: Maximum number of concepts to extract (default 30)
+
+        Returns:
+            List of key concepts/facts suitable for mnemonic generation
+
+        Raises:
+            Exception: If extraction fails
+        """
+        # Limit text length to avoid context issues (approx 15k chars = ~4k tokens)
+        max_text_length = 15000
+        if len(text) > max_text_length:
+            text = text[:max_text_length]
+
+        prompt = f"""You are an expert educator analyzing educational content.
+
+Analyze the following text and extract the KEY CONCEPTS, FACTS, or ITEMS that a student should memorize.
+
+RULES:
+- Extract between 10 and {max_concepts} key items
+- Each item should be a discrete fact, concept, term, or piece of information
+- Focus on memorizable content: definitions, lists, sequences, key terms, important facts
+- Each item should be concise (1-2 sentences max)
+- Items should be specific and actionable for learning
+- Skip introductory text, filler content, and repetitive information
+- Prioritize the most important concepts
+
+TEXT TO ANALYZE:
+---
+{text}
+---
+
+Return your response as a JSON object with this format:
+{{
+  "concepts": [
+    "First key concept or fact",
+    "Second key concept or fact",
+    ...
+  ]
+}}
+
+IMPORTANT: Only return the JSON object, no additional text."""
+
+        try:
+            message = self.client.messages.create(
+                model=self.model,
+                max_tokens=2048,
+                temperature=0.3,  # Lower temperature for more consistent extraction
+                messages=[
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                timeout=self.timeout,
+            )
+
+            response_text = message.content[0].text
+
+            # Parse JSON response
+            try:
+                # Handle markdown code blocks
+                if "```json" in response_text:
+                    json_start = response_text.find("```json") + 7
+                    json_end = response_text.find("```", json_start)
+                    response_text = response_text[json_start:json_end].strip()
+                elif "```" in response_text:
+                    json_start = response_text.find("```") + 3
+                    json_end = response_text.find("```", json_start)
+                    response_text = response_text[json_start:json_end].strip()
+
+                result = json.loads(response_text)
+                concepts = result.get("concepts", [])
+
+                if not concepts:
+                    raise Exception("No concepts were extracted from the text")
+
+                # Clean and validate concepts
+                cleaned_concepts = []
+                for concept in concepts:
+                    if isinstance(concept, str) and concept.strip():
+                        cleaned_concepts.append(concept.strip())
+
+                return cleaned_concepts
+
+            except json.JSONDecodeError as e:
+                raise Exception(f"Failed to parse Claude response: {str(e)}")
+
+        except anthropic.APITimeoutError:
+            raise Exception("Processing is taking longer than expected. Please try again.")
+
+        except anthropic.RateLimitError:
+            raise Exception("Too many requests. Please wait a moment and try again.")
+
+        except anthropic.APIError as e:
+            raise Exception(f"Failed to analyze text: {str(e)}")
+
     async def generate_mnemonics(
         self,
         list_items: List[str],

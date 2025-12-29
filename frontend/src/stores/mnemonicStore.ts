@@ -64,7 +64,11 @@ interface MnemonicState {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   generateMnemonics: (listItems: string[], deckId?: string) => Promise<MnemonicGenerationResult>;
-  selectMnemonic: (generationId: string, selectedType: 'acrostic' | 'story' | 'visual', deckId: string) => Promise<void>;
+  selectMnemonic: (
+    generationId: string,
+    selectedType: 'acrostic' | 'story' | 'visual',
+    deckId: string
+  ) => Promise<void>;
   checkGenerationLimit: () => Promise<GenerationLimitInfo>;
   clearError: () => void;
   clearCurrentGeneration: () => void;
@@ -108,7 +112,7 @@ export const useMnemonicStore = create<MnemonicState>((set) => ({
         },
         body: JSON.stringify({
           list_items: listItems,
-          deck_id: deckId
+          deck_id: deckId,
         }),
       });
 
@@ -117,7 +121,10 @@ export const useMnemonicStore = create<MnemonicState>((set) => ({
 
         // Handle specific error cases
         if (response.status === 403) {
-          throw new Error(errorData.detail || 'You have reached your monthly generation limit. Upgrade to Premium for unlimited generations.');
+          throw new Error(
+            errorData.detail ||
+              'You have reached your monthly generation limit. Upgrade to Premium for unlimited generations.'
+          );
         }
 
         if (response.status === 504) {
@@ -130,7 +137,7 @@ export const useMnemonicStore = create<MnemonicState>((set) => ({
       const result: MnemonicGenerationResult = await response.json();
       set({
         currentGeneration: result,
-        loading: false
+        loading: false,
       });
 
       return result;
@@ -138,7 +145,7 @@ export const useMnemonicStore = create<MnemonicState>((set) => ({
       const errorMessage = error instanceof Error ? error.message : 'Failed to generate mnemonics';
       set({
         error: errorMessage,
-        loading: false
+        loading: false,
       });
       throw error;
     }
@@ -167,7 +174,7 @@ export const useMnemonicStore = create<MnemonicState>((set) => ({
         body: JSON.stringify({
           generation_id: generationId,
           selected_type: selectedType,
-          deck_id: deckId
+          deck_id: deckId,
         }),
       });
 
@@ -186,7 +193,7 @@ export const useMnemonicStore = create<MnemonicState>((set) => ({
       const errorMessage = error instanceof Error ? error.message : 'Failed to select mnemonic';
       set({
         error: errorMessage,
-        loading: false
+        loading: false,
       });
       throw error;
     }
@@ -216,7 +223,8 @@ export const useMnemonicStore = create<MnemonicState>((set) => ({
 
       return limit;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to check generation limit';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to check generation limit';
       set({ error: errorMessage });
       throw error;
     }

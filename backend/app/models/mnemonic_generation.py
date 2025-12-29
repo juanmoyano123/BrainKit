@@ -7,9 +7,8 @@ Each generation logs the AI-generated mnemonics for analytics and quality tracki
 
 from sqlalchemy import Column, DateTime, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
-from sqlalchemy.orm import declarative_base
 
-Base = declarative_base()
+from app.core.database import Base
 
 
 class MnemonicGeneration(Base):

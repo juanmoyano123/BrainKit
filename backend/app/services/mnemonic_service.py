@@ -64,13 +64,13 @@ class MnemonicService:
                     "reset_date": None,
                 }
 
-            # Free tier: 3 generations per month
-            FREE_TIER_LIMIT = 3
+            # Free tier: Unlimited generations (removed limit)
+            FREE_TIER_LIMIT = 999999
             count = profile.get("generation_count_monthly", 0)
             remaining = max(0, FREE_TIER_LIMIT - count)
 
             return {
-                "can_generate": remaining > 0,
+                "can_generate": True,  # Always allow generation
                 "remaining": remaining,
                 "is_premium": False,
                 "reset_date": profile.get("generation_reset_date"),
@@ -194,6 +194,89 @@ class MnemonicService:
         except Exception as e:
             # Don't increment count on failure
             raise
+
+    async def save_generation_from_pdf(
+        self,
+        user_id: str,
+        deck_id: str,
+        concepts: List[str],
+        mnemonics: Dict[str, Any],
+        metadata: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """
+        Save a mnemonic generation from PDF extraction.
+
+        This is similar to generate_mnemonics but the concepts and mnemonics
+        were already extracted from a PDF by the PDF service.
+
+        Args:
+            user_id: The user's UUID
+            deck_id: Deck ID to associate with this generation
+            concepts: List of concepts extracted from PDF
+            mnemonics: Dict with acrostic, story, visual techniques
+            metadata: Generation metadata from Claude
+
+        Returns:
+            Dict containing updated metadata with generation_id
+
+        Raises:
+            Exception: If saving fails
+        """
+        try:
+            # Check generation limit
+            limit_check = await self.check_generation_limit(user_id)
+
+            if not limit_check["can_generate"]:
+                raise Exception(
+                    f"You have reached your monthly limit of 3 free generations. "
+                    f"Upgrade to Premium for unlimited generations."
+                )
+
+            # Save generation to database
+            input_list_text = "\n".join(concepts)
+
+            generation_data = {
+                "user_id": user_id,
+                "deck_id": deck_id,
+                "input_list": input_list_text,
+                "item_count": len(concepts),
+                "acrostic_result": mnemonics["acrostic"],
+                "story_result": mnemonics["story"],
+                "visual_result": mnemonics["visual"],
+                "generation_time_ms": metadata.get("generation_time_ms", 0),
+                "claude_model": metadata.get("model", "unknown"),
+            }
+
+            generation_response = self.admin_client.table("mnemonic_generations") \
+                .insert(generation_data) \
+                .execute()
+
+            if not generation_response.data:
+                raise Exception("Failed to save generation to database")
+
+            generation_id = generation_response.data[0]["id"]
+
+            # Increment generation count (only for free tier)
+            if not limit_check["is_premium"]:
+                await self.increment_generation_count(user_id)
+
+            # Return updated metadata
+            updated_metadata = {
+                "generation_id": generation_id,
+                "generation_time_ms": metadata.get("generation_time_ms", 0),
+                "item_count": len(concepts),
+                "model": metadata.get("model", "unknown"),
+            }
+
+            if limit_check["is_premium"]:
+                updated_metadata["remaining_generations"] = -1
+            else:
+                updated_metadata["remaining_generations"] = limit_check["remaining"] - 1
+
+            return {"metadata": updated_metadata}
+
+        except Exception as e:
+            raise Exception(f"Failed to save PDF generation: {str(e)}")
 
     async def select_mnemonic(
         self,
