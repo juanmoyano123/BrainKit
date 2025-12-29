@@ -6,11 +6,10 @@ Each flashcard belongs to a deck and tracks review statistics for the SM-2 algor
 """
 
 from datetime import date
-from sqlalchemy import Boolean, Column, Date, DateTime, Integer, Real, String, Text, func
+from sqlalchemy import Boolean, Column, Date, DateTime, Float, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import declarative_base
 
-Base = declarative_base()
+from app.core.database import Base
 
 
 class Flashcard(Base):
@@ -48,7 +47,7 @@ class Flashcard(Base):
     difficulty = Column(String(10), default="medium", nullable=False)
 
     # SRS fields (initialized on first review)
-    ease_factor = Column(Real, default=2.5, nullable=False)
+    ease_factor = Column(Float, default=2.5, nullable=False)
     interval_days = Column(Integer, default=0, nullable=False)
     repetitions = Column(Integer, default=0, nullable=False)
     next_review_date = Column(Date, default=date.today, nullable=False)

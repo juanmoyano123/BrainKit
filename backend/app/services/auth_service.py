@@ -283,17 +283,31 @@ class AuthService:
             Exception: If user retrieval fails
         """
         try:
-            # Set the session for the client
-            self.anon_client.auth.set_session(access_token, access_token)
-
-            # Get user
-            user = self.anon_client.auth.get_user()
+            # Get user directly from token (proper way to validate JWT)
+            user = self.admin_client.auth.get_user(access_token)
 
             if not user.user:
                 return None
 
-            # Fetch profile
-            profile_response = self.admin_client.table("profiles").select("*").eq("id", user.user.id).single().execute()
+            # Fetch profile (may not exist yet)
+            profile_data = None
+            try:
+                profile_response = self.admin_client.table("profiles").select("*").eq("id", user.user.id).single().execute()
+                profile_data = profile_response.data
+            except Exception:
+                # Profile doesn't exist yet, create it
+                try:
+                    new_profile = {
+                        "id": user.user.id,
+                        "display_name": user.user.email.split("@")[0] if user.user.email else None,
+                        "subscription_tier": "free",
+                        "generation_count_monthly": 0,
+                    }
+                    create_response = self.admin_client.table("profiles").insert(new_profile).execute()
+                    profile_data = create_response.data[0] if create_response.data else None
+                except Exception:
+                    # Profile creation failed, continue without profile
+                    pass
 
             return {
                 "user": {
@@ -302,7 +316,7 @@ class AuthService:
                     "email_confirmed_at": user.user.email_confirmed_at,
                     "created_at": user.user.created_at,
                 },
-                "profile": profile_response.data if profile_response.data else None,
+                "profile": profile_data,
             }
 
         except Exception as e:

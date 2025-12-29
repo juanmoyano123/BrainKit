@@ -29,11 +29,7 @@ interface CreateDeckModalProps {
   onSubmit: (name: string, description?: string) => Promise<void>;
 }
 
-export const CreateDeckModal: React.FC<CreateDeckModalProps> = ({
-  isOpen,
-  onClose,
-  onSubmit,
-}) => {
+export const CreateDeckModal: React.FC<CreateDeckModalProps> = ({ isOpen, onClose, onSubmit }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -85,9 +81,7 @@ export const CreateDeckModal: React.FC<CreateDeckModalProps> = ({
             error={!!errors.name}
             {...register('name')}
           />
-          {errors.name && (
-            <p className="mt-1 text-sm text-error-600">{errors.name.message}</p>
-          )}
+          {errors.name && <p className="mt-1 text-sm text-error-600">{errors.name.message}</p>}
         </div>
 
         <div>

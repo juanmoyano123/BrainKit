@@ -17,7 +17,12 @@ interface FlashcardListProps {
   loading: boolean;
   deckHasMnemonic: boolean;
   onGenerateFlashcards: () => void;
-  onUpdateFlashcard: (flashcardId: string, front: string, back: string, difficulty: string) => Promise<void>;
+  onUpdateFlashcard: (
+    flashcardId: string,
+    front: string,
+    back: string,
+    difficulty: string
+  ) => Promise<void>;
   onDeleteFlashcard: (flashcardId: string) => Promise<void>;
 }
 
@@ -42,8 +47,13 @@ export const FlashcardList: React.FC<FlashcardListProps> = ({
 
   const confirmDelete = async () => {
     if (deletingFlashcard) {
-      await onDeleteFlashcard(deletingFlashcard.id);
-      setDeletingFlashcard(null);
+      try {
+        await onDeleteFlashcard(deletingFlashcard.id);
+        setDeletingFlashcard(null);
+      } catch (error) {
+        console.error('Failed to delete flashcard:', error);
+        // Error is handled by the parent component
+      }
     }
   };
 

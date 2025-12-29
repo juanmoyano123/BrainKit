@@ -15,12 +15,7 @@ interface ToastProps {
   duration?: number;
 }
 
-export const Toast: React.FC<ToastProps> = ({
-  message,
-  type,
-  onClose,
-  duration = 3000,
-}) => {
+export const Toast: React.FC<ToastProps> = ({ message, type, onClose, duration = 3000 }) => {
   useEffect(() => {
     const timer = setTimeout(onClose, duration);
     return () => clearTimeout(timer);
@@ -41,10 +36,7 @@ export const Toast: React.FC<ToastProps> = ({
         <AlertCircle className="w-5 h-5 text-error-600" />
       )}
       <span className="text-sm font-medium">{message}</span>
-      <button
-        onClick={onClose}
-        className="ml-2 p-1 hover:bg-black/5 rounded"
-      >
+      <button onClick={onClose} className="ml-2 p-1 hover:bg-black/5 rounded">
         <X className="w-4 h-4" />
       </button>
     </div>

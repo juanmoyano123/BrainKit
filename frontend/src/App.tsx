@@ -8,6 +8,7 @@ import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage';
 import { ResetPasswordPage } from '@/pages/ResetPasswordPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { DeckDetailPage } from '@/pages/DeckDetailPage';
+import { StudySessionPage } from '@/pages/StudySessionPage';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { useAuthStore, setupAuthListener } from '@/stores/authStore';
 
@@ -57,6 +58,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <DeckDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/study/:deckId"
+            element={
+              <ProtectedRoute>
+                <StudySessionPage />
               </ProtectedRoute>
             }
           />

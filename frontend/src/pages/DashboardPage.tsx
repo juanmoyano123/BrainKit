@@ -22,7 +22,8 @@ import { Toast } from '@/components/ui/Toast';
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, profile, signOut } = useAuthStore();
-  const { decks, loading, error, fetchDecks, createDeck, updateDeck, deleteDeck, clearError } = useDeckStore();
+  const { decks, loading, error, fetchDecks, createDeck, updateDeck, deleteDeck, clearError } =
+    useDeckStore();
 
   // Modal states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -44,6 +45,7 @@ export const DashboardPage: React.FC = () => {
       navigate('/login');
     } catch (error) {
       console.error('Logout failed:', error);
+      setToast({ message: 'Logout failed. Please try again.', type: 'error' });
     }
   };
 
@@ -121,10 +123,7 @@ export const DashboardPage: React.FC = () => {
         {error && (
           <div className="mb-6 p-4 bg-error-50 border border-error-200 rounded-lg">
             <p className="text-sm text-error-800">{error}</p>
-            <button
-              onClick={clearError}
-              className="text-xs text-error-600 underline mt-1"
-            >
+            <button onClick={clearError} className="text-xs text-error-600 underline mt-1">
               Dismiss
             </button>
           </div>
@@ -218,13 +217,7 @@ export const DashboardPage: React.FC = () => {
       />
 
       {/* Toast */}
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   );
 };

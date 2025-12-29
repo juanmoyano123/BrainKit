@@ -98,13 +98,14 @@ export const EditDeckModal: React.FC<EditDeckModalProps> = ({
             error={!!errors.name}
             {...register('name')}
           />
-          {errors.name && (
-            <p className="mt-1 text-sm text-error-600">{errors.name.message}</p>
-          )}
+          {errors.name && <p className="mt-1 text-sm text-error-600">{errors.name.message}</p>}
         </div>
 
         <div>
-          <label htmlFor="edit-description" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="edit-description"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Description (optional)
           </label>
           <Textarea

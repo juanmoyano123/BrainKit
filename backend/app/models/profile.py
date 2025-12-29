@@ -7,9 +7,8 @@ It extends Supabase's auth.users with application-specific data.
 
 from sqlalchemy import Column, Date, DateTime, Integer, String, func
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import declarative_base
 
-Base = declarative_base()
+from app.core.database import Base
 
 
 class Profile(Base):

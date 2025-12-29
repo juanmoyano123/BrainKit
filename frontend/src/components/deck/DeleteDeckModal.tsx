@@ -55,9 +55,7 @@ export const DeleteDeckModal: React.FC<DeleteDeckModalProps> = ({
             <AlertTriangle className="w-6 h-6 text-error-600" />
           </div>
           <div>
-            <p className="text-gray-900 font-medium">
-              Delete "{deck?.name}"?
-            </p>
+            <p className="text-gray-900 font-medium">Delete "{deck?.name}"?</p>
             <p className="text-sm text-gray-600 mt-1">
               This will permanently delete {deck?.card_count || 0} flashcard
               {deck?.card_count !== 1 ? 's' : ''}. This action cannot be undone.
@@ -69,12 +67,7 @@ export const DeleteDeckModal: React.FC<DeleteDeckModalProps> = ({
           <Button type="button" variant="secondary" onClick={onClose}>
             Cancel
           </Button>
-          <Button
-            type="button"
-            variant="danger"
-            onClick={handleConfirm}
-            isLoading={isLoading}
-          >
+          <Button type="button" variant="danger" onClick={handleConfirm} isLoading={isLoading}>
             Delete Forever
           </Button>
         </div>

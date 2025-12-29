@@ -7,9 +7,8 @@ Each deck belongs to a user and contains flashcards for memorization.
 
 from sqlalchemy import Column, DateTime, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import declarative_base
 
-Base = declarative_base()
+from app.core.database import Base
 
 
 class Deck(Base):

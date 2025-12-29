@@ -51,8 +51,18 @@ interface FlashcardState {
   // API operations
   fetchFlashcards: (deckId: string) => Promise<void>;
   generateFlashcards: (deckId: string) => Promise<Flashcard[]>;
-  createFlashcard: (deckId: string, front: string, back: string, difficulty?: string) => Promise<Flashcard>;
-  updateFlashcard: (flashcardId: string, front?: string, back?: string, difficulty?: string) => Promise<Flashcard>;
+  createFlashcard: (
+    deckId: string,
+    front: string,
+    back: string,
+    difficulty?: string
+  ) => Promise<Flashcard>;
+  updateFlashcard: (
+    flashcardId: string,
+    front?: string,
+    back?: string,
+    difficulty?: string
+  ) => Promise<Flashcard>;
   deleteFlashcard: (flashcardId: string) => Promise<void>;
 }
 
@@ -61,7 +71,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 /**
  * Flashcard Store
  */
-export const useFlashcardStore = create<FlashcardState>((set, get) => ({
+export const useFlashcardStore = create<FlashcardState>((set) => ({
   // Initial state
   flashcards: [],
   loading: false,
@@ -135,7 +145,8 @@ export const useFlashcardStore = create<FlashcardState>((set, get) => ({
       set({ flashcards: data.flashcards, generating: false });
       return data.flashcards;
     } catch (error) {
-      set({ generating: false });
+      const errorMessage = error instanceof Error ? error.message : 'Failed to generate flashcards';
+      set({ generating: false, error: errorMessage });
       throw error;
     }
   },
@@ -212,9 +223,7 @@ export const useFlashcardStore = create<FlashcardState>((set, get) => ({
 
       const updatedFlashcard = await response.json();
       set((state) => ({
-        flashcards: state.flashcards.map((f) =>
-          f.id === flashcardId ? updatedFlashcard : f
-        ),
+        flashcards: state.flashcards.map((f) => (f.id === flashcardId ? updatedFlashcard : f)),
         loading: false,
       }));
       return updatedFlashcard;

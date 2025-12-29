@@ -16,13 +16,7 @@ interface ModalProps {
   className?: string;
 }
 
-export const Modal: React.FC<ModalProps> = ({
-  isOpen,
-  onClose,
-  title,
-  children,
-  className,
-}) => {
+export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, className }) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
   // Handle escape key

@@ -85,8 +85,8 @@ export function LandingPage() {
               </h1>
 
               <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-                AI generates personalized mnemonic techniques and flashcards from any list.
-                Spaced repetition handles the rest. Remember 95% of what you learn.
+                AI generates personalized mnemonic techniques and flashcards from any list. Spaced
+                repetition handles the rest. Remember 95% of what you learn.
               </p>
 
               {/* CTA buttons */}
@@ -100,11 +100,7 @@ export function LandingPage() {
                   Create Your First Deck - Free
                   <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  className="group"
-                >
+                <Button variant="secondary" size="lg" className="group">
                   <Play className="w-5 h-5 mr-2" />
                   Watch Demo
                 </Button>
@@ -183,10 +179,13 @@ export function LandingPage() {
                     <div className="bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl p-5 text-white">
                       <div className="flex items-center gap-2 mb-3">
                         <Sparkles className="w-5 h-5" />
-                        <span className="text-sm font-medium opacity-90">AI-Generated Mnemonic</span>
+                        <span className="text-sm font-medium opacity-90">
+                          AI-Generated Mnemonic
+                        </span>
                       </div>
                       <p className="text-lg font-medium leading-relaxed">
-                        "SAMPLE" - Symptoms, Assessment, Medications, Past history, Last meal, Events
+                        "SAMPLE" - Symptoms, Assessment, Medications, Past history, Last meal,
+                        Events
                       </p>
                     </div>
                   </div>
@@ -225,9 +224,7 @@ export function LandingPage() {
       {/* Trusted by section */}
       <section className="py-12 bg-gray-50 border-y border-gray-100">
         <div className="max-w-7xl mx-auto px-6">
-          <p className="text-center text-sm text-gray-500 mb-8">
-            TRUSTED BY PROFESSIONALS AT
-          </p>
+          <p className="text-center text-sm text-gray-500 mb-8">TRUSTED BY PROFESSIONALS AT</p>
           <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-60">
             {['Johns Hopkins', 'Mayo Clinic', 'Stanford', 'MIT', 'Harvard'].map((name) => (
               <div key={name} className="text-xl font-semibold text-gray-400">
@@ -250,7 +247,8 @@ export function LandingPage() {
               Everything you need to master any subject
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Combine the power of AI with proven learning science for unprecedented retention rates.
+              Combine the power of AI with proven learning science for unprecedented retention
+              rates.
             </p>
           </div>
 
@@ -259,37 +257,43 @@ export function LandingPage() {
               {
                 icon: Sparkles,
                 title: 'AI Mnemonic Generation',
-                description: 'Paste any list and get 3 different mnemonic techniques instantly. Pick the one that resonates with your brain.',
+                description:
+                  'Paste any list and get 3 different mnemonic techniques instantly. Pick the one that resonates with your brain.',
                 color: 'primary',
               },
               {
                 icon: Target,
                 title: 'Spaced Repetition (SRS)',
-                description: 'Scientifically-proven algorithm shows cards at the optimal time for long-term retention.',
+                description:
+                  'Scientifically-proven algorithm shows cards at the optimal time for long-term retention.',
                 color: 'purple',
               },
               {
                 icon: Clock,
                 title: 'Quick Study Sessions',
-                description: 'Review decks in just 5-10 minutes. Perfect for busy professionals on the go.',
+                description:
+                  'Review decks in just 5-10 minutes. Perfect for busy professionals on the go.',
                 color: 'orange',
               },
               {
                 icon: TrendingUp,
                 title: 'Progress Analytics',
-                description: 'Track your retention rate, study streaks, and identify weak areas that need more practice.',
+                description:
+                  'Track your retention rate, study streaks, and identify weak areas that need more practice.',
                 color: 'green',
               },
               {
                 icon: Shield,
                 title: 'Retention Guarantee',
-                description: 'Our users achieve 95%+ retention rate after 30 days of consistent study.',
+                description:
+                  'Our users achieve 95%+ retention rate after 30 days of consistent study.',
                 color: 'blue',
               },
               {
                 icon: Users,
                 title: 'Shared Decks',
-                description: 'Access community-created decks or share your own with colleagues and study groups.',
+                description:
+                  'Access community-created decks or share your own with colleagues and study groups.',
                 color: 'pink',
               },
             ].map((feature) => (
@@ -423,7 +427,7 @@ export function LandingPage() {
                 role: 'Commercial Pilot, United',
                 avatar: 'MR',
                 content:
-                  'As a pilot, forgetting procedures is not an option. BrainKit\'s SRS ensures I never miss a review. My check ride prep has never been smoother.',
+                  "As a pilot, forgetting procedures is not an option. BrainKit's SRS ensures I never miss a review. My check ride prep has never been smoother.",
                 rating: 5,
               },
               {
@@ -455,7 +459,7 @@ export function LandingPage() {
                 role: 'IT Security Analyst',
                 avatar: 'RT',
                 content:
-                  'Keeping up with security certifications is endless. BrainKit helps me maintain 12 different certs without feeling like I\'m constantly studying.',
+                  "Keeping up with security certifications is endless. BrainKit helps me maintain 12 different certs without feeling like I'm constantly studying.",
                 rating: 5,
               },
             ].map((testimonial) => (
@@ -492,7 +496,9 @@ export function LandingPage() {
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
               Built for high-stakes professionals
             </h2>
-            <p className="text-gray-600">Join thousands who trust BrainKit for critical knowledge</p>
+            <p className="text-gray-600">
+              Join thousands who trust BrainKit for critical knowledge
+            </p>
           </div>
           <div className="flex flex-wrap gap-4 justify-center">
             {[
@@ -531,9 +537,7 @@ export function LandingPage() {
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Start free, upgrade when you're ready
             </h2>
-            <p className="text-xl text-gray-600">
-              No credit card required. Cancel anytime.
-            </p>
+            <p className="text-xl text-gray-600">No credit card required. Cancel anytime.</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -718,9 +722,7 @@ export function LandingPage() {
           </div>
 
           <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm">
-              &copy; 2025 BrainKit. All rights reserved.
-            </p>
+            <p className="text-sm">&copy; 2025 BrainKit. All rights reserved.</p>
             <div className="flex gap-6">
               {['Twitter', 'LinkedIn', 'GitHub'].map((social) => (
                 <a

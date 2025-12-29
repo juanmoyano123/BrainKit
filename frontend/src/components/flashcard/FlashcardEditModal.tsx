@@ -73,9 +73,7 @@ export const FlashcardEditModal: React.FC<FlashcardEditModalProps> = ({
         <div>
           <label htmlFor="front" className="block text-sm font-medium text-gray-700 mb-1">
             Question (Front)
-            <span className="text-gray-400 ml-1">
-              {front.length}/2000
-            </span>
+            <span className="text-gray-400 ml-1">{front.length}/2000</span>
           </label>
           <Textarea
             id="front"
@@ -91,9 +89,7 @@ export const FlashcardEditModal: React.FC<FlashcardEditModalProps> = ({
         <div>
           <label htmlFor="back" className="block text-sm font-medium text-gray-700 mb-1">
             Answer (Back)
-            <span className="text-gray-400 ml-1">
-              {back.length}/2000
-            </span>
+            <span className="text-gray-400 ml-1">{back.length}/2000</span>
           </label>
           <Textarea
             id="back"

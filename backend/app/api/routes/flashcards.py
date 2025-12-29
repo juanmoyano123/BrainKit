@@ -118,6 +118,11 @@ async def generate_flashcards(
     except HTTPException:
         raise
     except Exception as e:
+        # Log the full error for debugging
+        import traceback
+        print(f"ERROR generating flashcards: {str(e)}")
+        print(traceback.format_exc())
+
         error_msg = str(e).lower()
 
         # Handle specific error cases

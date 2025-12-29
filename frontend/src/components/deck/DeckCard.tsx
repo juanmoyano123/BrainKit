@@ -39,11 +39,7 @@ export const DeckCard: React.FC<DeckCardProps> = ({ deck, onEdit, onDelete }) =>
   };
 
   return (
-    <Card
-      variant="interactive"
-      className="relative p-5 cursor-pointer"
-      onClick={handleCardClick}
-    >
+    <Card variant="interactive" className="relative p-5 cursor-pointer" onClick={handleCardClick}>
       {/* Menu Button */}
       <div className="absolute top-3 right-3">
         <button
@@ -92,9 +88,7 @@ export const DeckCard: React.FC<DeckCardProps> = ({ deck, onEdit, onDelete }) =>
       </div>
 
       {/* Deck Info */}
-      <h3 className="text-lg font-semibold text-gray-900 pr-8 mb-1 truncate">
-        {deck.name}
-      </h3>
+      <h3 className="text-lg font-semibold text-gray-900 pr-8 mb-1 truncate">{deck.name}</h3>
       {deck.description && (
         <p className="text-sm text-gray-500 mb-4 line-clamp-2">{deck.description}</p>
       )}

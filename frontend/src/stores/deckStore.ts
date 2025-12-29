@@ -168,7 +168,8 @@ export const useDeckStore = create<DeckState>((set) => ({
       }));
       return newDeck;
     } catch (error) {
-      set({ loading: false });
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create deck';
+      set({ loading: false, error: errorMessage });
       throw error;
     }
   },
@@ -208,7 +209,8 @@ export const useDeckStore = create<DeckState>((set) => ({
       }));
       return updatedDeck;
     } catch (error) {
-      set({ loading: false });
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update deck';
+      set({ loading: false, error: errorMessage });
       throw error;
     }
   },
@@ -244,7 +246,8 @@ export const useDeckStore = create<DeckState>((set) => ({
         loading: false,
       }));
     } catch (error) {
-      set({ loading: false });
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete deck';
+      set({ loading: false, error: errorMessage });
       throw error;
     }
   },

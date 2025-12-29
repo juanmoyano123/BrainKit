@@ -8,7 +8,15 @@ DATABASE_URL = settings.DATABASE_URL.replace(
     "postgresql://", "postgresql+asyncpg://"
 )
 
-engine = create_async_engine(DATABASE_URL, echo=settings.DEBUG)
+# Disable prepared statements for Supabase Transaction Pooler (pgbouncer)
+engine = create_async_engine(
+    DATABASE_URL,
+    echo=settings.DEBUG,
+    connect_args={
+        "statement_cache_size": 0,
+        "prepared_statement_cache_size": 0,
+    }
+)
 
 async_session_maker = sessionmaker(
     engine, class_=AsyncSession, expire_on_commit=False
