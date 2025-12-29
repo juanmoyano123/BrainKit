@@ -11,6 +11,7 @@ import { Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Textarea } from '@/components/ui/Textarea';
 import { Card } from '@/components/ui/Card';
+import { useMnemonicStore } from '@/stores/mnemonicStore';
 
 interface ListInputInterfaceProps {
   deckId: string;
@@ -50,10 +51,10 @@ function parseList(rawInput: string): string[] {
 export const ListInputInterface: React.FC<ListInputInterfaceProps> = ({
   onListSubmit
 }) => {
+  const { loading: mnemonicLoading } = useMnemonicStore();
   const [rawInput, setRawInput] = useState('');
   const [items, setItems] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
 
   // Parse input whenever it changes
   useEffect(() => {
@@ -102,22 +103,14 @@ export const ListInputInterface: React.FC<ListInputInterfaceProps> = ({
       return;
     }
 
-    setIsGenerating(true);
     setError(null);
 
     try {
-      // TODO: F-004 - Call AI mnemonic generation API
-      // For now, just pass items to parent component
       if (onListSubmit) {
-        onListSubmit(items);
+        await onListSubmit(items);
       }
-
-      // Temporary alert since F-004 is not implemented yet
-      alert(`List parsed successfully! ${items.length} items detected.\n\nF-004 (AI Mnemonic Generation) will be implemented next.`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate mnemonics');
-    } finally {
-      setIsGenerating(false);
     }
   }, [items, validateItems, onListSubmit]);
 
@@ -136,7 +129,7 @@ export const ListInputInterface: React.FC<ListInputInterfaceProps> = ({
   }, []);
 
   // Determine if button should be disabled
-  const isButtonDisabled = items.length === 0 || items.length < MIN_ITEMS || items.length > MAX_ITEMS || isGenerating;
+  const isButtonDisabled = items.length === 0 || items.length < MIN_ITEMS || items.length > MAX_ITEMS || mnemonicLoading;
 
   return (
     <Card className="p-6">
@@ -231,7 +224,7 @@ export const ListInputInterface: React.FC<ListInputInterfaceProps> = ({
           className="w-full"
           size="lg"
         >
-          {isGenerating ? (
+          {mnemonicLoading ? (
             <>
               <div className="w-5 h-5 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
               Generating mnemonics...
