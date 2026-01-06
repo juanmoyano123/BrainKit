@@ -7,13 +7,14 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Clock } from 'lucide-react';
 import { useStudyStore } from '@/stores/studyStore';
 import type { SessionSummary } from '@/stores/studyStore';
 import { Button } from '@/components/ui/Button';
 import { FlashcardDisplay } from '@/components/study/FlashcardDisplay';
 import { RatingButtons } from '@/components/study/RatingButtons';
 import { SessionComplete } from '@/components/study/SessionComplete';
+import { SessionProgressBar } from '@/components/progress/SessionProgressBar';
 import { Toast } from '@/components/ui/Toast';
 
 export const StudySessionPage: React.FC = () => {
@@ -159,11 +160,12 @@ export const StudySessionPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-3">
             <Button
               variant="ghost"
+              size="sm"
               onClick={() => {
                 const confirmExit = window.confirm(
                   'Are you sure you want to exit? Your progress will be saved.'
@@ -174,9 +176,24 @@ export const StudySessionPage: React.FC = () => {
               }}
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Exit Study Session
+              Exit
             </Button>
-            <div className="text-sm text-gray-600">Studying Deck</div>
+
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <Clock className="w-4 h-4" />
+              <span className="font-mono">
+                {Math.floor((Date.now() - (summary?.duration_seconds || 0) * 1000) / 60000)}:{String(Math.floor(((Date.now() - (summary?.duration_seconds || 0) * 1000) % 60000) / 1000)).padStart(2, '0')}
+              </span>
+            </div>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="space-y-2">
+            <SessionProgressBar current={currentCardIndex} total={dueCards.length} />
+            <p className="text-center text-sm text-gray-600">
+              <span className="font-semibold text-gray-900">{currentCardIndex + 1}</span> of{' '}
+              <span className="font-semibold text-gray-900">{dueCards.length}</span> cards
+            </p>
           </div>
         </div>
       </header>

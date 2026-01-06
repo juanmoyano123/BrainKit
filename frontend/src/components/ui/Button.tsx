@@ -3,7 +3,7 @@ import type { ButtonHTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'accent';
   size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
 }
@@ -17,9 +17,10 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       'inline-flex items-center justify-center font-medium cursor-pointer transition-all duration-150 focus:outline-none focus:shadow-ring disabled:opacity-50 disabled:cursor-not-allowed';
 
     const variants = {
-      primary: 'bg-primary-600 text-white hover:bg-primary-700 active:scale-[0.98]',
+      primary: 'bg-gradient-primary text-white hover:shadow-md active:scale-[0.98]',
+      accent: 'bg-gradient-accent text-white hover:shadow-md active:scale-[0.98]',
       secondary:
-        'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400',
+        'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-primary-300',
       ghost: 'bg-transparent text-primary-600 hover:bg-primary-50',
       danger: 'bg-error-600 text-white hover:bg-error-700 active:scale-[0.98]',
     };

@@ -7,13 +7,15 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Pencil, Trash2, FileUp, BookOpen } from 'lucide-react';
+import { ArrowLeft, Pencil, Trash2, FileUp, BookOpen, Target } from 'lucide-react';
 import { useDeckStore } from '@/stores/deckStore';
 import { useMnemonicStore } from '@/stores/mnemonicStore';
 import { useFlashcardStore } from '@/stores/flashcardStore';
 import type { PDFUploadResponse } from '@/stores/pdfStore';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { ProgressRing } from '@/components/progress/ProgressRing';
+import { ProgressBar } from '@/components/progress/ProgressBar';
 import { EditDeckModal } from '@/components/deck/EditDeckModal';
 import { DeleteDeckModal } from '@/components/deck/DeleteDeckModal';
 import { ListInputInterface } from '@/components/deck/ListInputInterface';
@@ -267,39 +269,97 @@ export const DeckDetailPage: React.FC = () => {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-3 mb-8">
-          <Card className="p-4">
-            <p className="text-sm text-gray-600">Total Cards</p>
-            <p className="text-2xl font-bold text-gray-900">{currentDeck.card_count}</p>
-          </Card>
-          <Card className="p-4">
-            <p className="text-sm text-gray-600">Last Studied</p>
-            <p className="text-lg font-semibold text-gray-900">
-              {currentDeck.last_studied_at
-                ? new Date(currentDeck.last_studied_at).toLocaleDateString()
-                : 'Never'}
-            </p>
-          </Card>
-          <Card className="p-4">
-            <p className="text-sm text-gray-600">Created</p>
-            <p className="text-lg font-semibold text-gray-900">
-              {new Date(currentDeck.created_at).toLocaleDateString()}
-            </p>
-          </Card>
-        </div>
-
-        {/* Study Button (F-007: SRS Study System) */}
+        {/* Mastery Hero Section */}
         {currentDeck.card_count > 0 && !currentGeneration && (
-          <div className="mb-8">
-            <Button
-              size="lg"
-              className="w-full md:w-auto"
-              onClick={() => navigate(`/study/${currentDeck.id}`)}
-            >
-              <BookOpen className="w-5 h-5 mr-2" />
-              Start Studying
-            </Button>
+          <div className="bg-gradient-hero rounded-3xl p-8 mb-8">
+            <div className="grid md:grid-cols-2 gap-8">
+              {/* Left: Progress Ring */}
+              <div className="flex flex-col items-center justify-center">
+                <ProgressRing
+                  value={Math.min(100, Math.max(0, (currentDeck.card_count - (currentDeck.cards_due || 0)) / Math.max(1, currentDeck.card_count) * 100))}
+                  size="lg"
+                />
+                <p className="mt-4 text-lg font-semibold text-gray-700">Mastery Level</p>
+              </div>
+
+              {/* Right: Stats Breakdown */}
+              <div className="space-y-4">
+                {/* Total Cards */}
+                <div className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-200">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <BookOpen className="w-6 h-6 text-gray-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Total Cards</p>
+                      <p className="text-2xl font-bold text-gray-900">{currentDeck.card_count}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Cards Due */}
+                <div className="flex items-center justify-between p-4 bg-accent-50 rounded-xl border border-accent-200">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-accent-100 rounded-lg flex items-center justify-center">
+                      <Target className="w-6 h-6 text-accent-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-accent-700">Cards Due</p>
+                      <p className="text-2xl font-bold text-accent-900">{currentDeck.cards_due || 0}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mastered / Learning / New (Mock data) */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Mastered</span>
+                    <span className="text-sm font-semibold text-success-700">
+                      {Math.max(0, currentDeck.card_count - (currentDeck.cards_due || 0))} ({Math.round(Math.max(0, currentDeck.card_count - (currentDeck.cards_due || 0)) / Math.max(1, currentDeck.card_count) * 100)}%)
+                    </span>
+                  </div>
+                  <ProgressBar value={Math.max(0, currentDeck.card_count - (currentDeck.cards_due || 0)) / Math.max(1, currentDeck.card_count) * 100} color="success" size="sm" />
+
+                  <div className="flex items-center justify-between mt-3">
+                    <span className="text-sm text-gray-600">Learning</span>
+                    <span className="text-sm font-semibold text-accent-700">
+                      {Math.min(currentDeck.cards_due || 0, Math.round(currentDeck.card_count * 0.2))} ({Math.round(Math.min(currentDeck.cards_due || 0, currentDeck.card_count * 0.2) / Math.max(1, currentDeck.card_count) * 100)}%)
+                    </span>
+                  </div>
+                  <ProgressBar value={Math.min(currentDeck.cards_due || 0, currentDeck.card_count * 0.2) / Math.max(1, currentDeck.card_count) * 100} color="accent" size="sm" />
+                </div>
+
+                {/* Study Now Button */}
+                <Button
+                  className="w-full mt-4"
+                  size="lg"
+                  onClick={() => navigate(`/study/${currentDeck.id}`)}
+                  disabled={!currentDeck.card_count}
+                >
+                  <BookOpen className="w-5 h-5 mr-2" />
+                  Study Now - {currentDeck.cards_due || 0} cards due
+                </Button>
+              </div>
+            </div>
+
+            {/* Study Stats Card */}
+            <div className="mt-6 grid grid-cols-3 gap-4 p-4 bg-white/50 rounded-xl border border-gray-200">
+              <div className="text-center">
+                <p className="text-sm text-gray-600">Cards Reviewed</p>
+                <p className="text-xl font-bold text-gray-900">-</p>
+                <p className="text-xs text-gray-500">Yesterday</p>
+              </div>
+              <div className="text-center border-l border-r border-gray-200">
+                <p className="text-sm text-gray-600">Correct Rate</p>
+                <p className="text-xl font-bold text-gray-900">-</p>
+                <p className="text-xs text-gray-500">All time</p>
+              </div>
+              <div className="text-center">
+                <p className="text-sm text-gray-600">Study Time</p>
+                <p className="text-xl font-bold text-gray-900">-</p>
+                <p className="text-xs text-gray-500">Avg per session</p>
+              </div>
+            </div>
           </div>
         )}
 

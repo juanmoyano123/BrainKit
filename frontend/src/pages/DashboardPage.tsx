@@ -1,23 +1,25 @@
 /**
- * Dashboard Page
+ * Dashboard Page V2
  *
- * Main dashboard for authenticated users showing their decks.
+ * Main dashboard with new Emerald design system and progress tracking.
  * Implements F-002: Deck Creation & Management
  */
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Plus } from 'lucide-react';
+import { LogOut, Plus, Target, Layers, TrendingUp } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useDeckStore, type Deck } from '@/stores/deckStore';
 import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
 import { DeckCard } from '@/components/deck/DeckCard';
 import { CreateDeckModal } from '@/components/deck/CreateDeckModal';
 import { EditDeckModal } from '@/components/deck/EditDeckModal';
 import { DeleteDeckModal } from '@/components/deck/DeleteDeckModal';
 import { EmptyDeckState } from '@/components/deck/EmptyDeckState';
 import { Toast } from '@/components/ui/Toast';
+import { StreakBadge } from '@/components/progress/StreakBadge';
+import { StatCard } from '@/components/progress/StatCard';
+import { WeeklyProgress, type DayData } from '@/components/progress/WeeklyProgress';
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -33,6 +35,24 @@ export const DashboardPage: React.FC = () => {
 
   // Toast state
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  // Mock stats data (will be replaced with real data from backend)
+  const mockStats = {
+    streak: 12,
+    cardsDue: 24,
+    cardsStudiedThisWeek: 156,
+    retentionRate: 87,
+    weeklyData: [
+      { day: 'Mon', value: 20 },
+      { day: 'Tue', value: 25 },
+      { day: 'Wed', value: 18 },
+      { day: 'Thu', value: 30 },
+      { day: 'Fri', value: 22 },
+      { day: 'Sat', value: 28 },
+      { day: 'Sun', value: 13 },
+    ] as DayData[],
+    weeklyGoal: 25,
+  };
 
   // Fetch decks on mount
   useEffect(() => {
@@ -52,7 +72,6 @@ export const DashboardPage: React.FC = () => {
   const handleCreateDeck = async (name: string, description?: string) => {
     const newDeck = await createDeck(name, description);
     setToast({ message: 'Deck created successfully', type: 'success' });
-    // Navigate to new deck detail page
     navigate(`/decks/${newDeck.id}`);
   };
 
@@ -76,37 +95,90 @@ export const DashboardPage: React.FC = () => {
     setIsDeleteModalOpen(true);
   };
 
+  const displayName = profile?.display_name || user?.email?.split('@')[0] || 'Student';
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">BrainKit</h1>
-            <Button variant="ghost" onClick={handleLogout}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </Button>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">B</span>
+              </div>
+              <h1 className="text-xl font-bold text-gray-900">BrainKit</h1>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <StreakBadge count={mockStats.streak} size="sm" />
+              <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                {displayName[0].toUpperCase()}
+              </div>
+              <Button variant="ghost" size="sm" onClick={handleLogout}>
+                <LogOut className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Banner */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              Welcome back, {profile?.display_name || user?.email?.split('@')[0]}!
-            </h2>
-            <p className="text-gray-600">Your AI-powered flashcard learning dashboard</p>
+        {/* Hero Section with Stats */}
+        <div className="bg-gradient-hero rounded-3xl p-8 mb-8">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 mb-8">
+            {/* Welcome Message */}
+            <div className="flex-1">
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                Welcome back, {displayName}!
+              </h2>
+              <p className="text-gray-600 mb-4">
+                Keep up the great work with your flashcard learning
+              </p>
+              {decks.length > 0 && (
+                <Button onClick={() => setIsCreateModalOpen(true)}>
+                  <Plus className="w-5 h-5 mr-2" />
+                  Create New Deck
+                </Button>
+              )}
+            </div>
+
+            {/* Large Streak Badge */}
+            <div>
+              <StreakBadge count={mockStats.streak} size="lg" variant="active" />
+            </div>
           </div>
-          {decks.length > 0 && (
-            <Button onClick={() => setIsCreateModalOpen(true)}>
-              <Plus className="w-5 h-5 mr-2" />
-              Create Deck
-            </Button>
-          )}
+
+          {/* Stat Cards */}
+          <div className="grid gap-4 md:grid-cols-3 mb-6">
+            <StatCard
+              icon={Target}
+              value={mockStats.cardsDue}
+              label="Cards Due Today"
+              iconBg="accent"
+            />
+            <StatCard
+              icon={Layers}
+              value={mockStats.cardsStudiedThisWeek}
+              label="Studied This Week"
+              iconBg="primary"
+            />
+            <StatCard
+              icon={TrendingUp}
+              value={`${mockStats.retentionRate}%`}
+              label="Retention Rate"
+              meta="+3% vs last week"
+              trend="up"
+              iconBg="success"
+            />
+          </div>
+
+          {/* Weekly Progress */}
+          <WeeklyProgress
+            data={mockStats.weeklyData}
+            goal={mockStats.weeklyGoal}
+          />
         </div>
 
         {/* Email Verification Banner */}
@@ -129,63 +201,37 @@ export const DashboardPage: React.FC = () => {
           </div>
         )}
 
-        {/* Deck Grid or Empty State */}
-        {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="animate-spin w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full" />
+        {/* Decks Section */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-2xl font-bold text-gray-900">Your Decks</h3>
+            {decks.length > 0 && (
+              <Button variant="secondary" size="sm" onClick={() => setIsCreateModalOpen(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Create Deck
+              </Button>
+            )}
           </div>
-        ) : decks.length === 0 ? (
-          <EmptyDeckState onCreateDeck={() => setIsCreateModalOpen(true)} />
-        ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {decks.map((deck) => (
-              <DeckCard
-                key={deck.id}
-                deck={deck}
-                onEdit={openEditModal}
-                onDelete={openDeleteModal}
-              />
-            ))}
-          </div>
-        )}
 
-        {/* Profile Summary Card - collapsed to bottom */}
-        <div className="mt-12 pt-8 border-t border-gray-200">
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Profile</h3>
-              <div className="space-y-3">
-                <div>
-                  <p className="text-sm text-gray-600">Email</p>
-                  <p className="text-sm font-medium text-gray-900">{user?.email}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Subscription</p>
-                  <p className="text-sm font-medium text-gray-900 capitalize">
-                    {profile?.subscription_tier || 'Free'}
-                  </p>
-                </div>
-              </div>
-            </Card>
-
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">AI Generation Quota</h3>
-              <div className="space-y-3">
-                <div>
-                  <p className="text-sm text-gray-600">Used this month</p>
-                  <p className="text-2xl font-bold text-primary-600">
-                    {profile?.generation_count_monthly || 0}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Quota limit</p>
-                  <p className="text-sm font-medium text-gray-900">
-                    {profile?.subscription_tier === 'premium' ? 'Unlimited' : '100 / month'}
-                  </p>
-                </div>
-              </div>
-            </Card>
-          </div>
+          {/* Deck Grid or Empty State */}
+          {loading ? (
+            <div className="flex items-center justify-center py-16">
+              <div className="animate-spin w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full" />
+            </div>
+          ) : decks.length === 0 ? (
+            <EmptyDeckState onCreateDeck={() => setIsCreateModalOpen(true)} />
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {decks.map((deck) => (
+                <DeckCard
+                  key={deck.id}
+                  deck={deck}
+                  onEdit={openEditModal}
+                  onDelete={openDeleteModal}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </main>
 

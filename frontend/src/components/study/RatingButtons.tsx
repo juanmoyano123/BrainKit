@@ -1,12 +1,12 @@
 /**
- * Rating Buttons Component
+ * Rating Buttons Component V2
  *
- * Displays rating buttons for SRS flashcard review.
- * Allows users to rate cards as Hard (1), Good (3), or Easy (5).
+ * Displays rating buttons for SRS flashcard review with new gradients.
+ * Hard = Red gradient, Good = Amber gradient, Easy = Emerald gradient
  */
 
 import React, { useEffect } from 'react';
-import { Button } from '@/components/ui/Button';
+import { XCircle, Circle, CheckCircle } from 'lucide-react';
 
 interface RatingButtonsProps {
   onRate: (quality: 1 | 3 | 5) => void;
@@ -26,9 +26,9 @@ export const RatingButtons: React.FC<RatingButtonsProps> = ({
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key === '1') {
         onRate(1);
-      } else if (e.key === '3') {
+      } else if (e.key === '2' || e.key === '3') {
         onRate(3);
-      } else if (e.key === '5') {
+      } else if (e.key === '3' || e.key === '5') {
         onRate(5);
       }
     };
@@ -42,56 +42,56 @@ export const RatingButtons: React.FC<RatingButtonsProps> = ({
   }
 
   return (
-    <div className="mt-6">
+    <div className="mt-8">
       <p className="text-center text-sm text-gray-600 mb-4">
-        Rate how well you remembered this card
+        How well did you know this?
       </p>
-      <div className="grid grid-cols-3 gap-3 max-w-3xl mx-auto">
+      <div className="flex gap-4 max-w-md mx-auto">
         {/* Hard Button */}
-        <Button
-          variant="secondary"
+        <button
           onClick={() => onRate(1)}
           disabled={disabled}
-          className="bg-red-50 border-red-200 text-red-700 hover:bg-red-100 hover:border-red-300 w-full h-auto py-3"
+          className="flex-1 flex flex-col items-center justify-center gap-2 h-24 rounded-xl bg-gradient-to-br from-error-500 to-error-600 text-white hover:shadow-lg hover:-translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <div className="flex flex-col items-center gap-1">
-            <span className="text-2xl font-bold">1</span>
-            <span className="text-sm font-medium">Hard</span>
-            <span className="text-xs opacity-75">Review tomorrow</span>
+          <XCircle size={28} />
+          <div className="text-center">
+            <p className="text-base font-semibold">Hard</p>
+            <p className="text-xs opacity-90">&lt;1 min</p>
           </div>
-        </Button>
+          <p className="text-xs opacity-75">[1]</p>
+        </button>
 
         {/* Good Button */}
-        <Button
-          variant="primary"
+        <button
           onClick={() => onRate(3)}
           disabled={disabled}
-          className="w-full h-auto py-3"
+          className="flex-1 flex flex-col items-center justify-center gap-2 h-24 rounded-xl bg-gradient-accent text-white hover:shadow-lg hover:-translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <div className="flex flex-col items-center gap-1">
-            <span className="text-2xl font-bold">3</span>
-            <span className="text-sm font-medium">Good</span>
-            <span className="text-xs opacity-75">Normal interval</span>
+          <Circle size={28} />
+          <div className="text-center">
+            <p className="text-base font-semibold">Good</p>
+            <p className="text-xs opacity-90">&lt;10 min</p>
           </div>
-        </Button>
+          <p className="text-xs opacity-75">[2]</p>
+        </button>
 
         {/* Easy Button */}
-        <Button
-          variant="secondary"
+        <button
           onClick={() => onRate(5)}
           disabled={disabled}
-          className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100 hover:border-green-300 w-full h-auto py-3"
+          className="flex-1 flex flex-col items-center justify-center gap-2 h-24 rounded-xl bg-gradient-primary text-white hover:shadow-lg hover:-translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <div className="flex flex-col items-center gap-1">
-            <span className="text-2xl font-bold">5</span>
-            <span className="text-sm font-medium">Easy</span>
-            <span className="text-xs opacity-75">Longer interval</span>
+          <CheckCircle size={28} />
+          <div className="text-center">
+            <p className="text-base font-semibold">Easy</p>
+            <p className="text-xs opacity-90">4 days</p>
           </div>
-        </Button>
+          <p className="text-xs opacity-75">[3]</p>
+        </button>
       </div>
 
-      <p className="text-center text-xs text-gray-500 mt-3">
-        Press 1, 3, or 5 on your keyboard for quick rating
+      <p className="text-center text-xs text-gray-500 mt-4">
+        Press [1] [2] [3] for quick rating
       </p>
     </div>
   );

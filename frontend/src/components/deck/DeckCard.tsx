@@ -1,13 +1,16 @@
 /**
- * DeckCard Component
+ * DeckCard Component V2
  *
- * Displays a deck summary card on the dashboard.
+ * Displays a deck summary card with progress tracking.
  */
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MoreVertical, Pencil, Trash2, BookOpen, Clock } from 'lucide-react';
+import { Pencil, Trash2, BookOpen } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
+import { ProgressRing } from '@/components/progress/ProgressRing';
+import { DueBadge } from '@/components/progress/DueBadge';
+import { ProgressBar } from '@/components/progress/ProgressBar';
 import type { Deck } from '@/stores/deckStore';
 
 interface DeckCardProps {
@@ -18,16 +21,15 @@ interface DeckCardProps {
 
 export const DeckCard: React.FC<DeckCardProps> = ({ deck, onEdit, onDelete }) => {
   const navigate = useNavigate();
-  const [menuOpen, setMenuOpen] = React.useState(false);
+  const [isHovered, setIsHovered] = React.useState(false);
 
   const handleCardClick = () => {
     navigate(`/decks/${deck.id}`);
   };
 
-  const handleMenuClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setMenuOpen(!menuOpen);
-  };
+  // Mock mastery data (will be replaced with real data from backend)
+  const mockMastery = Math.min(100, Math.max(0, (deck.card_count - (deck.cards_due || 0)) / Math.max(1, deck.card_count) * 100));
+  const cardsDue = deck.cards_due || 0;
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'Never';
@@ -35,84 +37,78 @@ export const DeckCard: React.FC<DeckCardProps> = ({ deck, onEdit, onDelete }) =>
     return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
+      year: 'numeric',
     });
   };
 
   return (
-    <Card variant="interactive" className="relative p-5 cursor-pointer" onClick={handleCardClick}>
-      {/* Menu Button */}
+    <Card
+      variant="interactive"
+      className="relative p-5 cursor-pointer overflow-hidden"
+      onClick={handleCardClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Due Badge */}
       <div className="absolute top-3 right-3">
-        <button
-          onClick={handleMenuClick}
-          className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded"
-        >
-          <MoreVertical className="w-5 h-5" />
-        </button>
-
-        {/* Dropdown Menu */}
-        {menuOpen && (
-          <>
-            <div
-              className="fixed inset-0 z-10"
-              onClick={(e) => {
-                e.stopPropagation();
-                setMenuOpen(false);
-              }}
-            />
-            <div className="absolute right-0 top-8 z-20 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[120px]">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setMenuOpen(false);
-                  onEdit(deck);
-                }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
-              >
-                <Pencil className="w-4 h-4" />
-                Edit
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setMenuOpen(false);
-                  onDelete(deck);
-                }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-error-600 hover:bg-error-50"
-              >
-                <Trash2 className="w-4 h-4" />
-                Delete
-              </button>
-            </div>
-          </>
-        )}
+        <DueBadge count={cardsDue} />
       </div>
 
       {/* Deck Info */}
-      <h3 className="text-lg font-semibold text-gray-900 pr-8 mb-1 truncate">{deck.name}</h3>
-      {deck.description && (
-        <p className="text-sm text-gray-500 mb-4 line-clamp-2">{deck.description}</p>
-      )}
+      <div className="mb-4">
+        <h3 className="text-lg font-semibold text-gray-900 pr-20 mb-1 truncate">
+          {deck.name}
+        </h3>
+        {deck.description && (
+          <p className="text-sm text-gray-500 line-clamp-2">{deck.description}</p>
+        )}
+      </div>
 
-      {/* Stats */}
-      <div className="flex items-center gap-4 text-sm text-gray-600">
-        <div className="flex items-center gap-1">
-          <BookOpen className="w-4 h-4" />
-          <span>{deck.card_count} cards</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <Clock className="w-4 h-4" />
-          <span>Studied: {formatDate(deck.last_studied_at)}</span>
+      {/* Progress Ring and Stats */}
+      <div className="flex items-center gap-4 mb-4">
+        <ProgressRing value={mockMastery} size="sm" />
+        <div className="flex-1">
+          <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+            <BookOpen className="w-4 h-4" />
+            <span>{deck.card_count} cards</span>
+          </div>
+          <p className="text-xs text-gray-500">
+            Last studied: {formatDate(deck.last_studied_at)}
+          </p>
         </div>
       </div>
 
-      {/* Due indicator - will be implemented in F-007 */}
-      {deck.cards_due && deck.cards_due > 0 && (
-        <div className="absolute top-3 left-3">
-          <span className="px-2 py-1 bg-primary-100 text-primary-700 text-xs font-medium rounded-full">
-            {deck.cards_due} due
-          </span>
+      {/* Progress Bar */}
+      <div className="mb-3">
+        <ProgressBar value={mockMastery} size="sm" />
+      </div>
+
+      {/* Hover Actions */}
+      {isHovered && (
+        <div className="absolute bottom-3 right-3 flex items-center gap-2 animate-fade-in">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(deck);
+            }}
+            className="p-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-primary-50 hover:border-primary-300 hover:text-primary-700 transition-all shadow-sm"
+          >
+            <Pencil className="w-4 h-4" />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(deck);
+            }}
+            className="p-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-error-50 hover:border-error-300 hover:text-error-700 transition-all shadow-sm"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
         </div>
       )}
+
+      {/* Bottom gradient stripe */}
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-progress" />
     </Card>
   );
 };

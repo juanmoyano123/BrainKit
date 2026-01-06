@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - BrainKit V2</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Colores Primarios (Emerald) */
+            --color-primary-50:  #ECFDF5;
+            --color-primary-100: #D1FAE5;
+            --color-primary-200: #A7F3D0;
+            --color-primary-300: #6EE7B7;
+            --color-primary-400: #34D399;
+            --color-primary-500: #10B981;
+            --color-primary-600: #059669;
+            --color-primary-700: #047857;
+            --color-primary-800: #065F46;
+            --color-primary-900: #064E3B;
+
+            /* Colores Accent (Amber) */
+            --color-accent-50:  #FFFBEB;
+            --color-accent-100: #FEF3C7;
+            --color-accent-200: #FDE68A;
+            --color-accent-300: #FCD34D;
+            --color-accent-400: #FBBF24;
+            --color-accent-500: #F59E0B;
+            --color-accent-600: #D97706;
+            --color-accent-700: #B45309;
+
+            /* Neutrales */
+            --color-gray-50:  #F9FAFB;
+            --color-gray-100: #F3F4F6;
+            --color-gray-200: #E5E7EB;
+            --color-gray-300: #D1D5DB;
+            --color-gray-400: #9CA3AF;
+            --color-gray-500: #6B7280;
+            --color-gray-600: #4B5563;
+            --color-gray-700: #374151;
+            --color-gray-800: #1F2937;
+            --color-gray-900: #111827;
+
+            /* Gradientes */
+            --gradient-primary: linear-gradient(135deg, #059669 0%, #0D9488 100%);
+            --gradient-hero: linear-gradient(135deg, #ECFDF5 0%, #FFFBEB 50%, #F0FDF4 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--color-gray-50);
+            color: var(--color-gray-900);
+            line-height: 1.5;
+        }
+
+        /* Header */
+        .header {
+            height: 64px;
+            background: white;
+            border-bottom: 1px solid var(--color-gray-200);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .header-inner {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--color-primary-600);
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--gradient-primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-streak {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--color-accent-100);
+            border-radius: 9999px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--color-accent-700);
+        }
+
+        .flame-icon {
+            width: 18px;
+            height: 18px;
+            color: var(--color-accent-500);
+        }
+
+        .header-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 9999px;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: box-shadow 0.2s;
+        }
+
+        .header-avatar:hover {
+            box-shadow: 0 0 0 3px var(--color-primary-200);
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        /* Hero Section */
+        .dashboard-hero {
+            background: var(--gradient-hero);
+            border-radius: 24px;
+            padding: 32px;
+            margin-bottom: 32px;
+        }
+
+        .hero-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .hero-left h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--color-gray-900);
+            margin-bottom: 8px;
+        }
+
+        .hero-left p {
+            font-size: 1.125rem;
+            color: var(--color-gray-600);
+            margin-bottom: 24px;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: var(--gradient-primary);
+            color: white;
+            font-weight: 600;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(5, 150, 105, 0.3);
+        }
+
+        /* Hero Streak Badge (Large) */
+        .hero-streak {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 32px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .hero-streak-icon {
+            width: 48px;
+            height: 48px;
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .hero-streak-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--color-accent-600);
+        }
+
+        .hero-streak-label {
+            font-size: 14px;
+            color: var(--color-gray-600);
+        }
+
+        /* Stats Row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid var(--color-gray-200);
+            transition: all 0.2s;
+        }
+
+        .stat-card:hover {
+            border-color: var(--color-primary-300);
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.1);
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--color-primary-50);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-primary-600);
+            font-size: 20px;
+            margin-bottom: 16px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--color-gray-900);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--color-gray-600);
+        }
+
+        /* Weekly Progress */
+        .weekly-progress {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid var(--color-gray-200);
+            margin-bottom: 32px;
+        }
+
+        .weekly-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .weekly-header h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--color-gray-900);
+        }
+
+        .weekly-goal {
+            font-size: 14px;
+            color: var(--color-gray-600);
+        }
+
+        .weekly-bars {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            height: 120px;
+            align-items: flex-end;
+        }
+
+        .day-bar {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .bar-container {
+            width: 100%;
+            height: 100px;
+            background: var(--color-gray-100);
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column-reverse;
+            margin-bottom: 8px;
+        }
+
+        .bar-fill {
+            background: var(--gradient-primary);
+            transition: height 0.5s ease;
+        }
+
+        .day-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--color-gray-600);
+        }
+
+        .day-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--color-gray-900);
+        }
+
+        /* Overall Progress Bar */
+        .overall-progress {
+            margin-top: 24px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .progress-bar-container {
+            height: 12px;
+            background: var(--color-gray-200);
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--gradient-primary);
+            border-radius: 9999px;
+            transition: width 0.5s ease;
+        }
+
+        /* Deck Cards Section */
+        .decks-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .decks-header h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--color-gray-900);
+        }
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: white;
+            color: var(--color-primary-600);
+            font-weight: 600;
+            border-radius: 10px;
+            border: 2px solid var(--color-primary-600);
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: var(--color-primary-50);
+        }
+
+        .deck-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .deck-card {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid var(--color-gray-200);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .deck-card:hover {
+            border-color: var(--color-primary-300);
+            box-shadow: 0 8px 24px rgba(5, 150, 105, 0.12);
+            transform: translateY(-4px);
+        }
+
+        .deck-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .deck-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--color-gray-900);
+            margin-bottom: 4px;
+        }
+
+        .deck-description {
+            font-size: 14px;
+            color: var(--color-gray-600);
+        }
+
+        /* Progress Ring */
+        .progress-ring {
+            width: 60px;
+            height: 60px;
+            position: relative;
+        }
+
+        .progress-ring svg {
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring-circle-bg {
+            fill: none;
+            stroke: var(--color-gray-200);
+            stroke-width: 6;
+        }
+
+        .progress-ring-circle {
+            fill: none;
+            stroke: var(--color-primary-500);
+            stroke-width: 6;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.5s;
+        }
+
+        .progress-ring-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--color-primary-600);
+        }
+
+        .deck-stats {
+            margin: 16px 0;
+        }
+
+        .deck-stat {
+            font-size: 14px;
+            color: var(--color-gray-600);
+            margin-bottom: 8px;
+        }
+
+        .deck-stat strong {
+            color: var(--color-gray-900);
+        }
+
+        /* Bottom Progress Strip */
+        .deck-progress-strip {
+            height: 8px;
+            background: var(--color-gray-200);
+            border-radius: 9999px;
+            overflow: hidden;
+            margin-top: 16px;
+        }
+
+        .deck-progress-strip-fill {
+            height: 100%;
+            background: var(--gradient-primary);
+            border-radius: 9999px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-content {
+                flex-direction: column;
+                gap: 24px;
+            }
+
+            .deck-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-inner">
+            <!-- Logo -->
+            <a href="#" class="logo">
+                <div class="logo-icon">🧠</div>
+                BrainKit
+            </a>
+
+            <!-- Right Side -->
+            <div class="header-right">
+                <!-- Streak Badge -->
+                <div class="header-streak">
+                    <span class="flame-icon">🔥</span>
+                    <span>12</span>
+                </div>
+
+                <!-- Avatar -->
+                <div class="header-avatar">JD</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="dashboard-hero">
+            <div class="hero-content">
+                <div class="hero-left">
+                    <h2>Welcome back, John!</h2>
+                    <p>Your learning journey continues</p>
+                    <button class="btn-primary">
+                        <span>📚</span>
+                        <span>Study Now</span>
+                    </button>
+                </div>
+                <div class="hero-streak">
+                    <div class="hero-streak-icon">🔥</div>
+                    <div class="hero-streak-number">12</div>
+                    <div class="hero-streak-label">day streak</div>
+                </div>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-value">24</div>
+                    <div class="stat-label">Cards due today</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-value">156</div>
+                    <div class="stat-label">Cards studied this week</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📈</div>
+                    <div class="stat-value">87%</div>
+                    <div class="stat-label">Retention rate</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Weekly Progress -->
+        <section class="weekly-progress">
+            <div class="weekly-header">
+                <h3>This Week's Progress</h3>
+                <span class="weekly-goal">Goal: 200 cards</span>
+            </div>
+
+            <div class="weekly-bars">
+                <div class="day-bar">
+                    <div class="bar-container">
+                        <div class="bar-fill" style="height: 64%;"></div>
+                    </div>
+                    <div class="day-label">Mon</div>
+                    <div class="day-value">32</div>
+                </div>
+                <div class="day-bar">
+                    <div class="bar-container">
+                        <div class="bar-fill" style="height: 56%;"></div>
+                    </div>
+                    <div class="day-label">Tue</div>
+                    <div class="day-value">28</div>
+                </div>
+                <div class="day-bar">
+                    <div class="bar-container">
+                        <div class="bar-fill" style="height: 90%;"></div>
+                    </div>
+                    <div class="day-label">Wed</div>
+                    <div class="day-value">45</div>
+                </div>
+                <div class="day-bar">
+                    <div class="bar-container">
+                        <div class="bar-fill" style="height: 42%;"></div>
+                    </div>
+                    <div class="day-label">Thu</div>
+                    <div class="day-value">21</div>
+                </div>
+                <div class="day-bar">
+                    <div class="bar-container">
+                        <div class="bar-fill" style="height: 0%;"></div>
+                    </div>
+                    <div class="day-label">Fri</div>
+                    <div class="day-value">-</div>
+                </div>
+                <div class="day-bar">
+                    <div class="bar-container">
+                        <div class="bar-fill" style="height: 0%;"></div>
+                    </div>
+                    <div class="day-label">Sat</div>
+                    <div class="day-value">-</div>
+                </div>
+                <div class="day-bar">
+                    <div class="bar-container">
+                        <div class="bar-fill" style="height: 0%;"></div>
+                    </div>
+                    <div class="day-label">Sun</div>
+                    <div class="day-value">-</div>
+                </div>
+            </div>
+
+            <div class="overall-progress">
+                <div class="progress-header">
+                    <span>156 / 200 cards</span>
+                    <span style="color: var(--color-primary-600); font-weight: 600;">78%</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" style="width: 78%;"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Decks Section -->
+        <section>
+            <div class="decks-header">
+                <h3>Your Decks</h3>
+                <button class="btn-secondary">
+                    <span>+</span>
+                    <span>Create Deck</span>
+                </button>
+            </div>
+
+            <div class="deck-grid">
+                <!-- Deck Card 1 -->
+                <div class="deck-card">
+                    <div class="deck-header">
+                        <div>
+                            <div class="deck-title">Medical Terms</div>
+                            <div class="deck-description">Emergency protocols and procedures</div>
+                        </div>
+                        <div class="progress-ring">
+                            <svg width="60" height="60">
+                                <circle class="progress-ring-circle-bg" cx="30" cy="30" r="24"></circle>
+                                <circle class="progress-ring-circle" cx="30" cy="30" r="24"
+                                    stroke-dasharray="150.8" stroke-dashoffset="45.24"></circle>
+                            </svg>
+                            <div class="progress-ring-text">70%</div>
+                        </div>
+                    </div>
+                    <div class="deck-stats">
+                        <div class="deck-stat"><strong>12 cards</strong> due today</div>
+                        <div class="deck-stat"><strong>48 total</strong> cards</div>
+                    </div>
+                    <div class="deck-progress-strip">
+                        <div class="deck-progress-strip-fill" style="width: 70%;"></div>
+                    </div>
+                </div>
+
+                <!-- Deck Card 2 -->
+                <div class="deck-card">
+                    <div class="deck-header">
+                        <div>
+                            <div class="deck-title">Aviation Protocols</div>
+                            <div class="deck-description">Pre-flight and emergency checklists</div>
+                        </div>
+                        <div class="progress-ring">
+                            <svg width="60" height="60">
+                                <circle class="progress-ring-circle-bg" cx="30" cy="30" r="24"></circle>
+                                <circle class="progress-ring-circle" cx="30" cy="30" r="24"
+                                    stroke-dasharray="150.8" stroke-dashoffset="15.08"></circle>
+                            </svg>
+                            <div class="progress-ring-text">90%</div>
+                        </div>
+                    </div>
+                    <div class="deck-stats">
+                        <div class="deck-stat"><strong>0 cards</strong> due today</div>
+                        <div class="deck-stat"><strong>36 total</strong> cards</div>
+                    </div>
+                    <div class="deck-progress-strip">
+                        <div class="deck-progress-strip-fill" style="width: 90%;"></div>
+                    </div>
+                </div>
+
+                <!-- Deck Card 3 -->
+                <div class="deck-card">
+                    <div class="deck-header">
+                        <div>
+                            <div class="deck-title">Legal Concepts</div>
+                            <div class="deck-description">Civil procedure and case law</div>
+                        </div>
+                        <div class="progress-ring">
+                            <svg width="60" height="60">
+                                <circle class="progress-ring-circle-bg" cx="30" cy="30" r="24"></circle>
+                                <circle class="progress-ring-circle" cx="30" cy="30" r="24"
+                                    stroke-dasharray="150.8" stroke-dashoffset="75.4"></circle>
+                            </svg>
+                            <div class="progress-ring-text">50%</div>
+                        </div>
+                    </div>
+                    <div class="deck-stats">
+                        <div class="deck-stat"><strong>8 cards</strong> due today</div>
+                        <div class="deck-stat"><strong>52 total</strong> cards</div>
+                    </div>
+                    <div class="deck-progress-strip">
+                        <div class="deck-progress-strip-fill" style="width: 50%;"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

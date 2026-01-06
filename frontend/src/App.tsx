@@ -9,6 +9,7 @@ import { ResetPasswordPage } from '@/pages/ResetPasswordPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { DeckDetailPage } from '@/pages/DeckDetailPage';
 import { StudySessionPage } from '@/pages/StudySessionPage';
+import { StatsPage } from '@/pages/StatsPage';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { useAuthStore, setupAuthListener } from '@/stores/authStore';
 
@@ -66,6 +67,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <StudySessionPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/stats"
+            element={
+              <ProtectedRoute>
+                <StatsPage />
               </ProtectedRoute>
             }
           />
