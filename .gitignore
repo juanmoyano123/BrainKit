@@ -44,3 +44,7 @@ htmlcov/
 
 # Misc
 *.local
+
+# Design files (not needed for deployment)
+design/
+workflow/
